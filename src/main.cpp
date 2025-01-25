@@ -108,34 +108,48 @@ int main()
     Shader coc_tex_shader = LoadShader(0, TextFormat("./src/shaders/coc_texture.fs", GLSL_VERSION));
     Shader coc_blur_shader = LoadShader(0, TextFormat("./src/shaders/coc_blur.fs", GLSL_VERSION));
     Shader box_blur_shader = LoadShader(0, TextFormat("./src/shaders/box_blur.fs", GLSL_VERSION));
+    Shader dilation_shader = LoadShader(0, TextFormat("./src/shaders/dilation.fs", GLSL_VERSION));
 
     //Z_buffer and clean texture
     RenderTexture2D z_buffer_tex = LoadRenderTextureRGBA16(screenWidth, screenHeight);
     RenderTexture2D box_blur_tex = LoadRenderTexture(screenWidth, screenHeight);
+    RenderTexture2D dilation_tex = LoadRenderTexture(screenWidth, screenHeight);
+    Texture2D background = LoadTexture("./images/Medieval city by A.Rocha.png");
 
-    float focusDistance = 8.5;
-    float focusRange = .3;
+    // focus distance ; focus range
+    Vector2 lensParams = (Vector2) {8.5, 5.0};
     // float maxBlurRad = 8.0;
-    // float separation = 1;
-    //maxBlurRad ; separation
-    Vector2 boxBlurParams = (Vector2) {0.0, 0.0};
 
-    int focusDistLoc = GetShaderLocation(coc_tex_shader, "focus_distance");
-    int focusRangeLoc = GetShaderLocation(coc_tex_shader, "focus_range");
+    //separation ; blur radius
+    Vector2 boxBlurParams = (Vector2) {1.0, 7.0};
+
+    // separation ; size;
+    Vector2 dilationParams = (Vector2) {1.0, 6.0};
+
+    int lensSettingsLoc = GetShaderLocation(coc_tex_shader, "lens_settings");
 
     int blurRadLoc = GetShaderLocation(coc_blur_shader, "max_blur_radius");
-    int cocTexLoc = GetShaderLocation(coc_blur_shader, "coc_texture");
-
+    int cocTexLoc = GetShaderLocation(coc_blur_shader, "screen_texture");
+    int blurredTexLoc = GetShaderLocation(coc_blur_shader, "blurred_texture");
 
     int boxBlurParamsLoc = GetShaderLocation(box_blur_shader, "box_blur_settings");
+    int boxBlurScreenTexLoc = GetShaderLocation(box_blur_shader, "screen_texture");
+    
+    int dilationScreenTexLoc = GetShaderLocation(dilation_shader, "screen_texture");
+    int dilationParamsLoc = GetShaderLocation(dilation_shader, "dilation_settings");
+
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         if(IsWindowResized()){
             UnloadRenderTexture(z_buffer_tex);
+            UnloadRenderTexture(box_blur_tex);
+            UnloadRenderTexture(dilation_tex);
             screenWidth = GetScreenWidth();
             screenHeight = GetScreenHeight();
             z_buffer_tex = LoadRenderTextureRGBA16(screenWidth, screenHeight);
+            box_blur_tex = LoadRenderTexture(screenWidth, screenHeight);
+            dilation_tex = LoadRenderTexture(screenWidth, screenHeight);
             sleep(.1);
         }
         // Update
@@ -145,34 +159,51 @@ int main()
 
         // Draw
         //----------------------------------------------------------------------------------
+
         BeginTextureMode(z_buffer_tex);
             ClearBackground(RAYWHITE);
+            rlDisableDepthTest();
+                DrawTexturePro(background, (Rectangle){ 0, 0, (float)background.width, (float)background.height },
+                (Rectangle){ 0, 0, (float)z_buffer_tex.texture.width, (float)-z_buffer_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
+            rlEnableDepthTest();
             BeginShaderMode(coc_tex_shader);
                 rlDisableColorBlend();
-                SetShaderValue(coc_tex_shader,focusDistLoc,&focusDistance,SHADER_UNIFORM_FLOAT);
-                SetShaderValue(coc_tex_shader,focusRangeLoc,&focusRange,SHADER_UNIFORM_FLOAT);
+                SetShaderValue(coc_tex_shader,lensSettingsLoc,&lensParams.x,SHADER_UNIFORM_VEC2);
                 draw_scene();
                 rlEnableColorBlend();
             EndShaderMode();
         EndTextureMode();
-        
+
         BeginTextureMode(box_blur_tex);
             ClearBackground(RAYWHITE);
             BeginShaderMode(box_blur_shader);
                 SetShaderValue(box_blur_shader,boxBlurParamsLoc,&boxBlurParams.x,SHADER_UNIFORM_VEC2);
+                SetShaderValueTexture(box_blur_shader,boxBlurScreenTexLoc,z_buffer_tex.texture);
+                //Does not work when I just draw a rect, even If I don't need the texture
+                DrawTextureRec(z_buffer_tex.texture, (Rectangle){ 0, 0, (float)z_buffer_tex.texture.width, (float)-z_buffer_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
             EndShaderMode();
         EndTextureMode();
 
+        BeginTextureMode(dilation_tex);
+            ClearBackground(RAYWHITE);
+            BeginShaderMode(dilation_shader);
+                SetShaderValue(dilation_shader,dilationParamsLoc,&dilationParams.x,SHADER_UNIFORM_VEC2);
+                SetShaderValueTexture(dilation_shader,dilationScreenTexLoc,box_blur_tex.texture);
+                //Does not work when I just draw a rect, even If I don't need the texture
+                DrawTextureRec(box_blur_tex.texture, (Rectangle){ 0, 0, (float)z_buffer_tex.texture.width, (float)-z_buffer_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+            EndShaderMode();
+        EndTextureMode();
+        
         BeginDrawing();
             ClearBackground(RAYWHITE);
             BeginShaderMode(coc_blur_shader);
                 SetShaderValueTexture(coc_blur_shader,cocTexLoc,z_buffer_tex.texture);
+                SetShaderValueTexture(coc_blur_shader,blurredTexLoc,dilation_tex.texture);
                 SetShaderValue(coc_blur_shader,blurRadLoc,&boxBlurParams.y,SHADER_UNIFORM_FLOAT);
-                DrawTextureRec(z_buffer_tex.texture, (Rectangle){ 0, 0, (float)z_buffer_tex.texture.width, (float)-z_buffer_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+                DrawTextureRec(dilation_tex.texture, (Rectangle){ 0, 0, (float)z_buffer_tex.texture.width, (float)-z_buffer_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
             EndShaderMode();
-
             rlImGuiBegin();	
-                DoFParameters(&focusDistance, &focusRange, &boxBlurParams.y,&positions[0]);
+                DoFParameters(&lensParams, &boxBlurParams.y,&dilationParams, &positions[0]);
             rlImGuiEnd();
             DrawFPS(10, 10);
         EndDrawing();
@@ -182,6 +213,9 @@ int main()
     // De-Initialization
     //--------------------------------------------------------------------------------------
     UnloadRenderTexture(z_buffer_tex);
+    UnloadRenderTexture(box_blur_tex);
+    UnloadRenderTexture(dilation_tex);
+    UnloadTexture(background);
     rlImGuiShutdown();
     CloseWindow();                  // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
@@ -192,20 +226,20 @@ int main()
 
 void draw_scene(){
     BeginMode3D(camera);
+        DrawCube(positions[1], 3.0f, 2.0f, 6.0f, YELLOW);
         DrawCube(cubePosition, 2.0f, 2.0f, 2.0f, RED);
-        DrawCube(positions[0], 1.0f, 4.0f, 3.0f, RED);
-        DrawCube(positions[1], 3.0f, 2.0f, 6.0f, RED);
+        DrawCube(positions[0], 1.0f, 4.0f, 3.0f, GREEN);
         DrawSphere(positions[2],4,BLUE);
         DrawGrid(10, 1.0f);
     EndMode3D();
 }
  
-void DoFParameters(float *focusDistance,float *focusRange,float* maxBlurRad, Vector3 *position)
+void DoFParameters(Vector2 *lensParams,float* maxBlurRad,Vector2 *dilationParams, Vector3 *position)
 {
     ImGui::Begin("Dof settings");
-    ImGui::SliderFloat("Focus distance",focusDistance, 0.0f,30.0f);
-    ImGui::SliderFloat("Focus range",focusRange, 0.0f,30.0f);
+    ImGui::SliderFloat2("Focus distance ; Focus range",&lensParams->x, 0.0f,30.0f);
     ImGui::SliderFloat("Max blur Radius",maxBlurRad, 0.0f,20.0f);
-    ImGui::SliderFloat3("Cube distance",&position->x, 0.0f,30.0f);
+    ImGui::SliderFloat("Size Dilation",&dilationParams->y, 1.0f,20.0f);
+    ImGui::SliderFloat3("Cube distance",&position->x, -10.0f,30.0f);
     ImGui::End();
 }

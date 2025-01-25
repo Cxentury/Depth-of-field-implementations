@@ -5,4 +5,4 @@
 #include <direct.h> 
 
 void draw_scene();
-void DoFParameters(float *focusDistance,float *focusRange,float* maxBlurRad, Vector3 *position);
+void DoFParameters(Vector2 *lensParams,float* maxBlurRad,Vector2 *dilationParams, Vector3 *position);
