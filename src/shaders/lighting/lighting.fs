@@ -1,3 +1,5 @@
+//raylib [shaders] example - basic lighting - Modified to get coc inside alpha channel
+
 #version 330
 
 // Input vertex attributes (from vertex shader)
@@ -10,14 +12,18 @@ in vec3 fragNormal;
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
 
+
 // Output fragment color
 out vec4 finalColor;
 
 // NOTE: Add here your custom variables
+// focus distance ; focus range
+uniform vec2 lens_settings;
 
 #define     MAX_LIGHTS              4
 #define     LIGHT_DIRECTIONAL       0
 #define     LIGHT_POINT             1
+
 
 struct Light {
     int enabled;
@@ -32,8 +38,19 @@ uniform Light lights[MAX_LIGHTS];
 uniform vec4 ambient;
 uniform vec3 viewPos;
 
+float near = 0.1;
+float far  = 1000.0;
+
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0;
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
+
 void main()
 {
+
     // Texel color fetching from texture sampler
     vec4 texelColor = texture(texture0, fragTexCoord);
     vec3 lightDot = vec3(0.0);
@@ -75,4 +92,15 @@ void main()
 
     // Gamma correction
     finalColor = pow(finalColor, vec4(1.0/2.2));
+
+    //CoC
+    float focus_distance = lens_settings.x;
+    float focus_range = lens_settings.y;
+
+    float depth = LinearizeDepth(gl_FragCoord.z);
+    float coc = (depth - focus_distance) / focus_range;
+	coc = clamp(coc, -1.0,1.0);
+    // finalColor.rgb = vec3(coc);
+    finalColor.a = coc;
+
 }

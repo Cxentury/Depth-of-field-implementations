@@ -1,8 +1,17 @@
-#include <raylib.h>
-#include <array>
-#include <iostream>
-#include <iterator>
-#include <direct.h> 
+#ifndef MAIN_H
+#define MAIN_H
+
+#define RLIGHTS_IMPLEMENTATION
+#include "utils.h"
+#include "BoxBlurDof.h"
+
+
+
+#define GLSL_VERSION 330
+#if defined(PLATFORM_WEB)
+    #include <emscripten/emscripten.h>
+#endif
 
 void draw_scene();
-void DoFParameters(Vector2 *lensParams,float* maxBlurRad,Vector2 *dilationParams, Vector3 *position);
+
+#endif

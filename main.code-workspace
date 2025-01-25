@@ -71,9 +71,13 @@
 			"text_encoding": "cpp",
 			"variant": "cpp",
 			"config.h": "c",
-			"utils.h": "c"
+			"utils.h": "c",
+			"rlgl.h": "c",
+			"imgui.h": "c",
+			"unistd.h": "c",
+			"direct.h": "c"
 		},
 		"git.autoRepositoryDetection": false,
-		"git.enabled": false
+		"git.enabled": true
 	}
 }
