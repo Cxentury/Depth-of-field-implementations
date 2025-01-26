@@ -7,15 +7,24 @@ int Utils::sScreen_height = 450;
 
 Camera Utils::camera = { 0 };
 RenderTexture2D Utils::sScreen_tex = {0};
+RenderTexture2D Utils::sCoC_tex = {0};
+Shader Utils::cocShader = {0};
 Texture2D Utils::background = {0};
-Model Utils::scene = {0};
 
+Vector2 Utils::lensParams = (Vector2) {17.5, 8.5};
+int Utils::lensSettingsLoc = 0;
+int Utils::screenTexLoc = 0;
+
+Model Utils::scene = {0};
 std::array<Vector3,4> Utils::positions = {(Vector3){0} ,(Vector3) { 1.0f, 4.0f, -3.0f},(Vector3){3.0f, 2.0f, -6.0f},(Vector3){-4.0f, 6.0f, -12.0f}};
 
 void Utils::init(){
-    loadScreenTex();
+    loadScreenAndDepthTex();
     Utils::background = LoadTexture("./images/Medieval city by A.Rocha.png");
     Utils::scene = LoadModel("./scene/scene.obj");
+    Utils::cocShader = LoadShader(0,"./src/shaders/coc.fs");
+    Utils::lensSettingsLoc = GetShaderLocation(cocShader, "lens_settings");
+    Utils::screenTexLoc = GetShaderLocation(cocShader, "scren_texture");
 }
 
 RenderTexture2D Utils::LoadRenderTextureRGBA16(int width, int height)
@@ -56,29 +65,27 @@ RenderTexture2D Utils::LoadRenderTextureRGBA16(int width, int height)
     return target;
 }
 
-void Utils::loadScreenTex(){
+void Utils::loadScreenAndDepthTex(){
     Utils::sScreen_tex = LoadRenderTextureRGBA16(Utils::sScreen_width, Utils::sScreen_height);
+    Utils::sCoC_tex = LoadRenderTextureRGBA16(Utils::sScreen_width, Utils::sScreen_height);
 }
 
-void Utils::unloadScreenTex(){
+void Utils::unloadScreenAndDepthTex(){
     UnloadRenderTexture(Utils::sScreen_tex);
+    UnloadRenderTexture(Utils::sCoC_tex);
 }
 
 void Utils::unloadTextures(){
     UnloadRenderTexture(Utils::sScreen_tex);
+    UnloadRenderTexture(Utils::sCoC_tex);
     UnloadTexture(Utils::background);
     UnloadModel(Utils::scene);
 }
 
 void Utils::draw_scene(){
-    BeginMode3D(camera);
+    BeginMode3D(Utils::camera);
         DrawModel(Utils::scene, {0,0,0}, 1.2, WHITE);
-        // DrawCube(positions[0], 2.0f, 2.0f, 2.0f, RED);
-        // DrawCube(positions[1], 3.0f, 2.0f, 6.0f, YELLOW);
-        // DrawCube(positions[2], 1.0f, 4.0f, 3.0f, GREEN);
-        // DrawSphere(positions[3],4,BLUE);
-        DrawGrid(10, 1.0f);
-
+        // DrawGrid(10, 1.0f);
         // for (int i = 0; i < MAX_LIGHTS; i++)
         // {
         //     if (lights[i].enabled) DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
@@ -88,12 +95,29 @@ void Utils::draw_scene(){
     EndMode3D();
 }
 
+void Utils::drawDepth(){
+
+}
+
+void Utils::drawCoC(){
+    BeginShaderMode(cocShader);
+        SetShaderValue(cocShader,lensSettingsLoc,&Utils::lensParams.x,SHADER_UNIFORM_VEC2);
+        SetShaderValueTexture(cocShader,screenTexLoc,Utils::sScreen_tex.texture);
+        DrawTextureRec(Utils::sCoC_tex.texture, (Rectangle){ 0, 0, (float)Utils::sCoC_tex.texture.width, (float)-Utils::sCoC_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+    EndShaderMode();
+}
+
 void Utils::onResize(){
-    Utils::unloadScreenTex();
+    Utils::unloadScreenAndDepthTex();
     Utils::sScreen_width = GetScreenWidth();
     Utils::sScreen_height = GetScreenHeight();
     std::cout << Utils::sScreen_width << std::endl;
     std::cout << Utils::sScreen_height << std::endl;
+    Utils::loadScreenAndDepthTex();
+}
 
-    Utils::loadScreenTex();
+void Utils::drawUI(){
+    ImGui::Begin("DoF settings");
+    ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,30.0f);
+    ImGui::End();       
 }

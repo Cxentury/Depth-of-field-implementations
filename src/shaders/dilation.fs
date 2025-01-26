@@ -10,7 +10,7 @@ out vec4 finalColor;
 
 void main() {
 
-    float minThreshold = .1;
+    float minThreshold = .2;
     float maxThreshold = .3;
     
     vec2 tex_offset = 1.0 / textureSize(screen_texture, 0);

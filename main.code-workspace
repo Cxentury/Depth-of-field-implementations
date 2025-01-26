@@ -75,7 +75,11 @@
 			"rlgl.h": "c",
 			"imgui.h": "c",
 			"unistd.h": "c",
-			"direct.h": "c"
+			"direct.h": "c",
+			"raymath.h": "c",
+			"lights.h": "c",
+			"rlights.h": "c",
+			"rlimgui.h": "c"
 		},
 		"git.autoRepositoryDetection": false,
 		"git.enabled": true

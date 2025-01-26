@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include <array>
 #include "utils.h"
+#include "lights.h"
 
 #define GLSL_VERSION 330
 #if defined(PLATFORM_WEB)
@@ -11,8 +12,7 @@
 #endif
 
 typedef enum{
-    SHADER_LIGHTS = 0,
-    SHADER_BLUR,
+    SHADER_BLUR = 0,
     SHADER_DILATION,
     SHADER_DOF
 } SHADERS_ENUM;
@@ -25,8 +25,6 @@ typedef enum{
 class BoxBlurDof{
     
     private:
-        int ambientLoc;
-        int lensSettingsLoc;
         int boxBlurParamsLoc,boxBlurScreenTexLoc;
         int dilationScreenTexLoc, dilationParamsLoc;
         int blurRadLoc,cocTexLoc,blurredTexLoc;
@@ -34,8 +32,6 @@ class BoxBlurDof{
     public:
         std::array<Shader,4> shaders;
         std::array<RenderTexture2D,3> textures;
-        // focus distance ; focus range
-        Vector2 lensParams = (Vector2) {8.5, 5.0};
         // float maxBlurRad = 8.0;
 
         //separation ; blur radius
@@ -48,17 +44,9 @@ class BoxBlurDof{
             //coc_tex_shader
             // shaders[0] = LoadShader(0, TextFormat("./src/shaders/coc_texture.fs", GLSL_VERSION));
             //Lights shader + CoC
-            shaders[SHADER_LIGHTS] = LoadShader(TextFormat("./src/shaders/lighting/lighting.vs", GLSL_VERSION),
-                               TextFormat("./src/shaders/lighting/lighting.fs", GLSL_VERSION));
             shaders[SHADER_BLUR] = LoadShader(0, TextFormat("./src/shaders/box_blur.fs", GLSL_VERSION));
             shaders[SHADER_DILATION] = LoadShader(0, TextFormat("./src/shaders/dilation.fs", GLSL_VERSION));
             shaders[SHADER_DOF] = LoadShader(0, TextFormat("./src/shaders/coc_blur.fs", GLSL_VERSION));
-
-            
-            
-            shaders[SHADER_LIGHTS].locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shaders[SHADER_LIGHTS], "viewPos");
-            ambientLoc = GetShaderLocation(shaders[SHADER_LIGHTS], "ambient");
-            lensSettingsLoc = GetShaderLocation(shaders[SHADER_LIGHTS], "lens_settings");
 
             boxBlurParamsLoc = GetShaderLocation(shaders[SHADER_BLUR], "box_blur_settings");
             boxBlurScreenTexLoc = GetShaderLocation(shaders[SHADER_BLUR], "screen_texture");
@@ -73,13 +61,14 @@ class BoxBlurDof{
             loadTextures();
         }
     
-    void shaderScreenTex(Light* lights);
+    void shaderScreenTex(Lights* lightShader);
     void shaderBlur();
     void shaderDilation();
     void shaderDoF();
     void drawUI();
     void loadTextures();
     void unloadTextures();
+    void render(Lights* lights);
 };
 
 #endif

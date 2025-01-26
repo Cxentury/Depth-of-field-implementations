@@ -17,8 +17,6 @@ uniform vec4 colDiffuse;
 out vec4 finalColor;
 
 // NOTE: Add here your custom variables
-// focus distance ; focus range
-uniform vec2 lens_settings;
 
 #define     MAX_LIGHTS              4
 #define     LIGHT_DIRECTIONAL       0
@@ -93,14 +91,8 @@ void main()
     // Gamma correction
     finalColor = pow(finalColor, vec4(1.0/2.2));
 
-    //CoC
-    float focus_distance = lens_settings.x;
-    float focus_range = lens_settings.y;
-
+    //Depth
     float depth = LinearizeDepth(gl_FragCoord.z);
-    float coc = (depth - focus_distance) / focus_range;
-	coc = clamp(coc, -1.0,1.0);
-    // finalColor.rgb = vec3(coc);
-    finalColor.a = coc;
+    // finalColor.a = depth;
 
 }
