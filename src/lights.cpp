@@ -11,16 +11,20 @@ Lights::Lights(/* args */)
     lightShader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(lightShader, "viewPos");
     ambientLoc = GetShaderLocation(lightShader, "ambient");
     lensSettingsLoc = GetShaderLocation(lightShader, "lens_settings");
+    setDepthLoc = GetShaderLocation(lightShader, "set_depth");
+
 }
 
 Lights::~Lights()
 {
 }
 
-void Lights::updateShaderValues(){
+void Lights::updateShaderValues(int setDepth){
     for (int i = 0; i < MAX_LIGHTS; i++) UpdateLightValues(lightShader, lights[i]);
     SetShaderValue(lightShader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
     SetShaderValue(lightShader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
+    SetShaderValue(lightShader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
+    SetShaderValue(lightShader, setDepthLoc, &setDepth, SHADER_UNIFORM_INT);
     // for (int i = 0; i < MAX_LIGHTS; i++)
     // {
     //     if (lights[i].enabled) DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);

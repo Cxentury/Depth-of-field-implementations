@@ -11,7 +11,7 @@ in vec3 fragNormal;
 // Input uniform values
 uniform sampler2D texture0;
 uniform vec4 colDiffuse;
-
+uniform int set_depth;
 
 // Output fragment color
 out vec4 finalColor;
@@ -88,11 +88,14 @@ void main()
     finalColor = (texelColor*((tint + vec4(specular, 1.0))*vec4(lightDot, 1.0)));
     finalColor += texelColor*(ambient/10.0)*tint;
 
+
     // Gamma correction
     finalColor = pow(finalColor, vec4(1.0/2.2));
 
-    //Depth
-    float depth = LinearizeDepth(gl_FragCoord.z);
-    // finalColor.a = depth;
+    if(set_depth == 1){
+        //Depth
+        float depth = LinearizeDepth(gl_FragCoord.z);
+        finalColor.a = depth;
+    }
 
 }

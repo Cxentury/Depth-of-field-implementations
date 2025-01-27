@@ -63,7 +63,17 @@ void BoxBlurDof::unloadTextures(){
 }
 
 void BoxBlurDof::render(Lights* lights){
+    lights->updateShaderValues(true);
     
+    BeginTextureMode(Utils::sScreen_tex);
+        rlDisableColorBlend();
+        ClearBackground(BLACK);
+        DrawTexturePro(Utils::background, (Rectangle){ 0, 0, (float)Utils::background.width, (float)Utils::background.height },
+        (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
+        Utils::draw_scene();
+        rlEnableColorBlend();
+    EndTextureMode();
+
     //Depth and screen texture
     BeginTextureMode(Utils::sCoC_tex);
         ClearBackground(RAYWHITE);

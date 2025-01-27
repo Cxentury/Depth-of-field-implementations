@@ -40,7 +40,6 @@ int main()
     DisableCursor();    
 
 
-    std::cout << "GGGGGGGGGGG" ;
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {

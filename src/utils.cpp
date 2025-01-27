@@ -95,10 +95,6 @@ void Utils::draw_scene(){
     EndMode3D();
 }
 
-void Utils::drawDepth(){
-
-}
-
 void Utils::drawCoC(){
     BeginShaderMode(cocShader);
         SetShaderValue(cocShader,lensSettingsLoc,&Utils::lensParams.x,SHADER_UNIFORM_VEC2);

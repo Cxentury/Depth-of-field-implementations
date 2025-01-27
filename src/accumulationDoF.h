@@ -9,8 +9,8 @@ class AccumulationDoF
 private:
     /* data */
 public:
-    int sampleCount = 256;
-    float offsetFactor = 0.001;
+    int sampleCount = 250;
+    float offsetFactor = 0.6;
     Shader accumulationShader = LoadShader(0,"./src/shaders/accumulation.fs");
     int accumulatedTexLoc = GetShaderLocation(accumulationShader,"accumulated_texture");
     int nbSamplesLoc = GetShaderLocation(accumulationShader,"samples");
@@ -20,8 +20,5 @@ public:
 
     void render(Lights* lights);
     void drawUI();
-    Vector4 fadeColor(Color color, float alpha);
-    void modified_DrawTextureRec(Texture2D texture, Rectangle source, Vector2 position, Vector4 tint);
-    void modified_DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Vector4 tint);
 };
 #endif

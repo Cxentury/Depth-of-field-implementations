@@ -21,7 +21,7 @@ class Utils{
         static Texture2D background;
         static int sScreen_width;
         static int sScreen_height;
-        
+
         static RenderTexture2D sScreen_tex;
         static RenderTexture2D sCoC_tex;
 
@@ -33,7 +33,7 @@ class Utils{
         // focus distance ; focus range
         static int lensSettingsLoc;
         static int screenTexLoc;
-
+        
         static Vector2 lensParams;
         
         static void init();

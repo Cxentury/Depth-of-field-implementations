@@ -17,12 +17,14 @@ class Lights{
         Light lights[MAX_LIGHTS];
         Shader lightShader;
         int lensSettingsLoc;
+        int setDepth;
+        int setDepthLoc;
         
 
         Lights(/* args */);
         ~Lights();
 
-        void updateShaderValues();
+        void updateShaderValues(int setDepth);
         void drawUI();
 };
 #endif

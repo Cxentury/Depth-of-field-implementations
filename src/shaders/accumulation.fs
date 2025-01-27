@@ -10,6 +10,6 @@ out vec4 finalColor;
 void main()
 {
     vec4 color = texture(accumulated_texture,fragTexCoord);
-    color/=samples;
+    color/=float(samples);
     finalColor = vec4(color);
 } 
