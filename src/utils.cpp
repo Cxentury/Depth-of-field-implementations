@@ -11,9 +11,10 @@ RenderTexture2D Utils::sCoC_tex = {0};
 Shader Utils::cocShader = {0};
 Texture2D Utils::background = {0};
 
-Vector2 Utils::lensParams = (Vector2) {17.5, 8.5};
+Vector2 Utils::lensParams = (Vector2) {23.2, 9};
 int Utils::lensSettingsLoc = 0;
 int Utils::screenTexLoc = 0;
+int Utils::sTechnique = DOF_BOXBLUR;
 
 Model Utils::scene = {0};
 std::array<Vector3,4> Utils::positions = {(Vector3){0} ,(Vector3) { 1.0f, 4.0f, -3.0f},(Vector3){3.0f, 2.0f, -6.0f},(Vector3){-4.0f, 6.0f, -12.0f}};

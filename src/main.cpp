@@ -21,24 +21,22 @@ int main()
     Lights lights = Lights();
 
     Utils::init();
-    Utils::camera.position = (Vector3){ 0.0f, 0.0f, 17.5f };
+    Utils::camera.position = (Vector3){ 1.45334f, 0.723842f, 25.61f};
     Utils::camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
     Utils::camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
-    Utils::camera.fovy = 60.0f;
+    Utils::camera.fovy = 27.0f;
     Utils::camera.projection = CAMERA_PERSPECTIVE;
     
     for(int i = 0; i < Utils::scene.materialCount; i++){
         Utils::scene.materials[i].shader = lights.lightShader;
     }
     
-    int technique = DOF_ACCUMULATION;
     //--------------------------------------------------------------------------------------
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     rlImGuiSetup(true);
     //--------------------------------------------------------------------------------------
     DisableCursor();    
-
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -56,10 +54,9 @@ int main()
 
         // Draw
         //----------------------------------------------------------------------------------
-
-        if(technique == DOF_BOXBLUR)
+        if(Utils::sTechnique == Utils::DOF_BOXBLUR)
             boxBlurDof.render(&lights);
-        else if(technique == DOF_ACCUMULATION)
+        else if(Utils::sTechnique == Utils::DOF_ACCUMULATION)
             accumulationDoF.render(&lights);
 
         //----------------------------------------------------------------------------------

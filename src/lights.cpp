@@ -3,10 +3,12 @@
 Lights::Lights(/* args */)
 {
     lightShader = LoadShader("./src/shaders/lighting/lighting.vs","./src/shaders/lighting/lighting.fs");
-    lights[0] = CreateLight(LIGHT_POINT, (Vector3){ -2, 1, -2 }, Vector3Zero(), YELLOW, lightShader);
-    lights[1] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, 2 }, Vector3Zero(), RED, lightShader);
-    // lights[2] = CreateLight(LIGHT_POINT, (Vector3){ -2, 1, 2 }, Vector3Zero(), GREEN, lightShader);
-    lights[2] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, 18 }, Vector3Zero(), RED, lightShader);
+    sunlightPos = (Vector3){ 11, 11, 9 };
+    lights[0] = CreateLight(LIGHT_DIRECTIONAL, sunlightPos, Vector3Zero(), {133,154,229}, lightShader);
+    lights[0].positionLoc = GetShaderLocation(lightShader,"lights[0].position");
+    // lights[0] = CreateLight(LIGHT_POINT, (Vector3){ -2, 1, -2 }, Vector3Zero(), YELLOW, lightShader);
+    // lights[1] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, 2 }, Vector3Zero(), RED, lightShader);
+    // lights[2] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, 18 }, Vector3Zero(), RED, lightShader);
 
     lightShader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(lightShader, "viewPos");
     ambientLoc = GetShaderLocation(lightShader, "ambient");
@@ -20,15 +22,15 @@ Lights::~Lights()
 }
 
 void Lights::updateShaderValues(int setDepth){
-    for (int i = 0; i < MAX_LIGHTS; i++) UpdateLightValues(lightShader, lights[i]);
+    SetShaderValue(lightShader, lightShader.locs[SHADER_LOC_VECTOR_VIEW], &Utils::camera.position, SHADER_UNIFORM_VEC3);
+    lights[0].position = sunlightPos;
+
+    for (int i = 0; i < MAX_LIGHTS; i++) 
+        UpdateLightValues(lightShader, lights[i]);
+    
     SetShaderValue(lightShader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
     SetShaderValue(lightShader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
     SetShaderValue(lightShader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
     SetShaderValue(lightShader, setDepthLoc, &setDepth, SHADER_UNIFORM_INT);
-    // for (int i = 0; i < MAX_LIGHTS; i++)
-    // {
-    //     if (lights[i].enabled) DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
-    //     else DrawSphereWires(lights[i].position, 0.2f, 8, 8, ColorAlpha(lights[i].color, 0.3f));
-    // }
 }
 

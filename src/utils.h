@@ -18,9 +18,16 @@ class Utils{
     private:
         static RenderTexture2D LoadRenderTextureRGBA16(int width, int height);
     public:
+
+        enum{
+            DOF_BOXBLUR = 0,
+            DOF_ACCUMULATION 
+        };
+        
         static Texture2D background;
         static int sScreen_width;
         static int sScreen_height;
+        static int sTechnique;
 
         static RenderTexture2D sScreen_tex;
         static RenderTexture2D sCoC_tex;

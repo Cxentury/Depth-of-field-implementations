@@ -91,7 +91,8 @@ void main()
 
     // Gamma correction
     finalColor = pow(finalColor, vec4(1.0/2.2));
-
+    //or else accumulation buffer colors will be brighter
+    finalColor.a = 1.0;
     if(set_depth == 1){
         //Depth
         float depth = LinearizeDepth(gl_FragCoord.z);

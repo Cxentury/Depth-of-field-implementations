@@ -65,7 +65,7 @@ class BoxBlurDof{
     void shaderBlur();
     void shaderDilation();
     void shaderDoF();
-    void drawUI();
+    void drawUI(Vector3* sunlightPos);
     void loadTextures();
     void unloadTextures();
     void render(Lights* lights);

@@ -7,6 +7,7 @@
 #include "rlImGui.h"
 #include "imgui.h"
 #include "rlights.h"
+#include "utils.h"
 
 class Lights{
     private:
@@ -16,6 +17,8 @@ class Lights{
         
         Light lights[MAX_LIGHTS];
         Shader lightShader;
+        Vector3 sunlightPos;
+        
         int lensSettingsLoc;
         int setDepth;
         int setDepthLoc;

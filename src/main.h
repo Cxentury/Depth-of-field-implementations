@@ -11,11 +11,6 @@
     #include <emscripten/emscripten.h>
 #endif
 
-enum{
-   DOF_BOXBLUR = 0,
-   DOF_ACCUMULATION 
-};
-
 void draw_scene();
 
 #endif
