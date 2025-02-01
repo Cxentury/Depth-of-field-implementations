@@ -5,6 +5,8 @@
 int Utils::sScreen_width = 800;
 int Utils::sScreen_height = 450;
 
+Color Utils::sClearColor = {138, 155, 192, 255};
+
 Camera Utils::camera = { 0 };
 RenderTexture2D Utils::sScreen_tex = {0};
 RenderTexture2D Utils::sCoC_tex = {0};
@@ -115,6 +117,7 @@ void Utils::onResize(){
 
 void Utils::drawUI(){
     ImGui::Begin("DoF settings");
+    ImGui::SliderInt("Technique",&Utils::sTechnique, 0,2);
     ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,30.0f);
     ImGui::End();       
 }

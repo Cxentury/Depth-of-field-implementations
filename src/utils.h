@@ -21,20 +21,21 @@ class Utils{
 
         enum{
             DOF_BOXBLUR = 0,
-            DOF_ACCUMULATION 
+            DOF_ACCUMULATION ,
+            DOF_SINGLEPASS
         };
         
         static Texture2D background;
         static int sScreen_width;
         static int sScreen_height;
         static int sTechnique;
-
         static RenderTexture2D sScreen_tex;
         static RenderTexture2D sCoC_tex;
 
         static Camera camera;
         static Model scene;
         static Shader cocShader;
+        static Color sClearColor;
         static std::array<Vector3,4> positions;
 
         // focus distance ; focus range

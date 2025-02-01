@@ -9,13 +9,19 @@ class AccumulationDoF
 private:
     /* data */
 public:
-    int sampleCount = 400;
+
+    int sampleCount = 500;
     float offsetFactor = 0.2;
+    int randomSampling = 0;
+
     Shader accumulationShader = LoadShader(0,"./src/shaders/accumulation.fs");
+    Shader passThroughShader = LoadShader(0,"./src/shaders/pass_through.fs");
+
     int accumulatedTexLoc = GetShaderLocation(accumulationShader,"accumulated_texture");
     int nbSamplesLoc = GetShaderLocation(accumulationShader,"samples");
+    int passThroughTextureLoc = GetShaderLocation(passThroughShader,"texture0");
+    
     Vector3 samples[3000];
-    int randomSampling = 0;
 
     AccumulationDoF(/* args */);
     ~AccumulationDoF();

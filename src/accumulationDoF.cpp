@@ -1,5 +1,6 @@
 #include "accumulationDoF.h"
-#include "glad.h"
+
+#include <glad.h>
 
 #define POISSON_PROGRESS_INDICATOR 1
 #include "PoissonGenerator.h"
@@ -57,7 +58,7 @@ void AccumulationDoF::render(Lights* lights){
         UpdateCamera(&Utils::camera, CAMERA_PERSPECTIVE);
 
         BeginTextureMode(Utils::sScreen_tex);
-            ClearBackground(BLANK);
+            ClearBackground(Utils::sClearColor);
             rlDisableColorBlend();
             // DrawTexturePro(Utils::background, (Rectangle){ 0, 0, (float)Utils::background.width, (float)Utils::background.height },
             // (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
@@ -66,11 +67,15 @@ void AccumulationDoF::render(Lights* lights){
         EndTextureMode();
 
         BeginTextureMode(Utils::sCoC_tex);
-            rlSetBlendFactors(GL_CONSTANT_ALPHA,GL_ONE,GL_FUNC_SUBTRACT);
-            rlEnableColorBlend();
+            // rlSetBlendFactors(GL_CONSTANT_ALPHA,GL_ONE,GL_FUNC_SUBTRACT);
+            // rlEnableColorBlend();
             BeginBlendMode(RL_BLEND_ADDITIVE);
-            // glBlendColor(0,0,0,1.0/alphaFac);
-            DrawTextureRec(Utils::sScreen_tex.texture, (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height, }, (Vector2){ 0, 0 },WHITE);
+            // glBlendColor(0,0,0,1.0/sampleCount);
+            BeginShaderMode(passThroughShader);
+                SetShaderValueTexture(passThroughShader,accumulatedTexLoc,Utils::sScreen_tex.texture);
+                DrawTextureRec(Utils::sScreen_tex.texture, (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height, }, (Vector2){ 0, 0 },WHITE);
+            EndShaderMode();
+
             EndBlendMode();
         EndTextureMode();
     }
@@ -78,10 +83,12 @@ void AccumulationDoF::render(Lights* lights){
 
     Utils::camera.position = cameraPos;
     BeginDrawing();
-        ClearBackground(BLANK);
+        ClearBackground(Utils::sClearColor);
         // rlSetBlendMode(RL_BLEND_ALPHA);
         // rlEnableColorBlend();
 
+        // DrawTexturePro(Utils::background, (Rectangle){ 0, 0, (float)Utils::background.width, (float)Utils::background.height },
+        // (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
         BeginShaderMode(accumulationShader);
             SetShaderValueTexture(accumulationShader,accumulatedTexLoc,Utils::sCoC_tex.texture);
             SetShaderValue(accumulationShader,nbSamplesLoc,&sampleCount,RL_SHADER_UNIFORM_INT);
@@ -99,7 +106,6 @@ void AccumulationDoF::render(Lights* lights){
 
 void AccumulationDoF::drawUI(Vector3* sunlightPos){
     ImGui::Begin("Accumulation settings");
-    ImGui::SliderInt("Technique",&Utils::sTechnique, 0,1);
     ImGui::SliderInt("Poisson / Random distribution",&randomSampling, 0,1);
     ImGui::SliderInt("Number of Samples",&sampleCount, 0,500);
     ImGui::SliderFloat("Offset factor",&offsetFactor, 0.01f,1.0f);

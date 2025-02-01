@@ -46,7 +46,6 @@ void BoxBlurDof::drawUI(Vector3* sunlightPos){
 
     ImGui::Begin("Box blur settings");
     // ImGui::SliderFloat("Max blur Radius",maxBlurRad, 0.0f,20.0f);
-    ImGui::SliderInt("Technique",&Utils::sTechnique, 0,1);
     ImGui::SliderFloat2("Separation ; Size Dilation",&dilationParams.x, 0.1f,15.0f);
     ImGui::SliderFloat3("Sunlight Position",&sunlightPos->x, 0.5f,15.0f);
     // ImGui::SliderFloat3("Cube distance",&position.x, -10.0f,30.0f);
