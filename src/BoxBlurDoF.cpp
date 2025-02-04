@@ -1,5 +1,33 @@
 #include "BoxBlurDof.h"
 
+BoxBlurDof::BoxBlurDof(){
+
+    shaders[SHADER_BLUR] = LoadShader(0, TextFormat("./src/shaders/box_blur.fs", GLSL_VERSION));
+    shaders[SHADER_DILATION] = LoadShader(0, TextFormat("./src/shaders/dilation.fs", GLSL_VERSION));
+    shaders[SHADER_DOF] = LoadShader(0, TextFormat("./src/shaders/coc_blur.fs", GLSL_VERSION));
+
+    boxBlurParamsLoc = GetShaderLocation(shaders[SHADER_BLUR], "box_blur_settings");
+    boxBlurScreenTexLoc = GetShaderLocation(shaders[SHADER_BLUR], "screen_texture");
+    
+    dilationScreenTexLoc = GetShaderLocation(shaders[SHADER_DILATION], "screen_texture");
+    dilationParamsLoc = GetShaderLocation(shaders[SHADER_DILATION], "dilation_settings");
+
+    blurRadLoc = GetShaderLocation(shaders[SHADER_DOF], "max_blur_radius");
+    cocTexLoc = GetShaderLocation(shaders[SHADER_DOF], "screen_texture");
+    blurredTexLoc = GetShaderLocation(shaders[SHADER_DOF], "blurred_texture");
+
+    loadTextures();
+    
+}
+
+BoxBlurDof::~BoxBlurDof(){
+    UnloadRenderTexture(textures[BLUR_TEX]);
+    UnloadRenderTexture(textures[DILATION_TEX]);   
+    UnloadShader(shaders[SHADER_BLUR]);
+    UnloadShader(shaders[SHADER_DILATION]);
+    UnloadShader(shaders[SHADER_DOF]);
+}
+
 void BoxBlurDof::shaderScreenTex(Lights* lightShader){
     BeginShaderMode(lightShader->lightShader);
         rlDisableColorBlend();
@@ -45,8 +73,8 @@ void BoxBlurDof::shaderDoF(){
 void BoxBlurDof::drawUI(Vector3* sunlightPos){
 
     ImGui::Begin("Box blur settings");
-    // ImGui::SliderFloat("Max blur Radius",maxBlurRad, 0.0f,20.0f);
-    ImGui::SliderFloat2("Separation ; Size Dilation",&dilationParams.x, 0.1f,15.0f);
+    ImGui::SliderFloat("Max blur Radius",&boxBlurParams.y, 1.0f,20.0f);
+    ImGui::SliderFloat2("Separation ; Size Dilation",&dilationParams.x, .0f,15.0f);
     ImGui::SliderFloat3("Sunlight Position",&sunlightPos->x, 0.5f,15.0f);
     // ImGui::SliderFloat3("Cube distance",&position.x, -10.0f,30.0f);
     ImGui::End();       
@@ -68,9 +96,7 @@ void BoxBlurDof::render(Lights* lights){
     
     BeginTextureMode(Utils::sScreen_tex);
         rlDisableColorBlend();
-        ClearBackground(BLACK);
-        DrawTexturePro(Utils::background, (Rectangle){ 0, 0, (float)Utils::background.width, (float)Utils::background.height },
-        (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
+        ClearBackground(Utils::sClearColor);
         Utils::draw_scene();
         rlEnableColorBlend();
     EndTextureMode();

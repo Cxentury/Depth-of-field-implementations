@@ -18,6 +18,7 @@ void main() {
 
 	for(int x = -radius; x <= radius; x++){
 		for(int y = -radius; y <= radius; y++){
+			if(length(vec2(float(x),float(y))) > radius) continue;
 			vec2 offset = vec2(float(x),float(y))*tex_offset;
             color += texture(screen_texture, fragTexCoord+offset*separation).rgb;
             weight+=1.0;

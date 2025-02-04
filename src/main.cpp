@@ -18,6 +18,8 @@ int main()
     
     BoxBlurDof boxBlurDof = BoxBlurDof();
     AccumulationDoF accumulationDoF = AccumulationDoF();
+    SinglePassDoF singlePassDoF = SinglePassDoF();
+
     Lights lights = Lights();
 
     Utils::init();
@@ -58,13 +60,14 @@ int main()
             boxBlurDof.render(&lights);
         else if(Utils::sTechnique == Utils::DOF_ACCUMULATION)
             accumulationDoF.render(&lights);
-
+        else if(Utils::sTechnique == Utils::DOF_SINGLEPASS)
+            singlePassDoF.render(&lights);
         //----------------------------------------------------------------------------------
     }
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    boxBlurDof.unloadTextures();
+    // boxBlurDof.unloadTextures();
     Utils::unloadTextures();
     rlImGuiShutdown();
     CloseWindow();                  // Close window and OpenGL context

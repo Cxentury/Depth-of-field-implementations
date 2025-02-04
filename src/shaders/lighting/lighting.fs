@@ -1,6 +1,6 @@
 //raylib [shaders] example - basic lighting - Modified to get coc inside alpha channel
 
-#version 330
+#version 330 core
 
 // Input vertex attributes (from vertex shader)
 in vec3 fragPosition;

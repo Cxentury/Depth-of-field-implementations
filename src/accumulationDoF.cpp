@@ -60,8 +60,6 @@ void AccumulationDoF::render(Lights* lights){
         BeginTextureMode(Utils::sScreen_tex);
             ClearBackground(Utils::sClearColor);
             rlDisableColorBlend();
-            // DrawTexturePro(Utils::background, (Rectangle){ 0, 0, (float)Utils::background.width, (float)Utils::background.height },
-            // (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
             Utils::draw_scene();
             rlEnableColorBlend();
         EndTextureMode();
@@ -84,11 +82,6 @@ void AccumulationDoF::render(Lights* lights){
     Utils::camera.position = cameraPos;
     BeginDrawing();
         ClearBackground(Utils::sClearColor);
-        // rlSetBlendMode(RL_BLEND_ALPHA);
-        // rlEnableColorBlend();
-
-        // DrawTexturePro(Utils::background, (Rectangle){ 0, 0, (float)Utils::background.width, (float)Utils::background.height },
-        // (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
         BeginShaderMode(accumulationShader);
             SetShaderValueTexture(accumulationShader,accumulatedTexLoc,Utils::sCoC_tex.texture);
             SetShaderValue(accumulationShader,nbSamplesLoc,&sampleCount,RL_SHADER_UNIFORM_INT);
@@ -107,7 +100,7 @@ void AccumulationDoF::render(Lights* lights){
 void AccumulationDoF::drawUI(Vector3* sunlightPos){
     ImGui::Begin("Accumulation settings");
     ImGui::SliderInt("Poisson / Random distribution",&randomSampling, 0,1);
-    ImGui::SliderInt("Number of Samples",&sampleCount, 0,500);
+    ImGui::SliderInt("Number of Samples",&sampleCount, 0,300);
     ImGui::SliderFloat("Offset factor",&offsetFactor, 0.01f,1.0f);
     ImGui::SliderFloat3("Sunlight Position",&sunlightPos->x, 0.5f,15.0f);
     ImGui::End();

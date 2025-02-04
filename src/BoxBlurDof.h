@@ -38,29 +38,10 @@ class BoxBlurDof{
         Vector2 boxBlurParams = (Vector2) {1.0, 7.0};
 
         // separation ; size;
-        Vector2 dilationParams = (Vector2) {1.0, 6.0};
+        Vector2 dilationParams = (Vector2) {1.0, 0.0};
 
-        BoxBlurDof(){
-            //coc_tex_shader
-            // shaders[0] = LoadShader(0, TextFormat("./src/shaders/coc_texture.fs", GLSL_VERSION));
-            //Lights shader + CoC
-            shaders[SHADER_BLUR] = LoadShader(0, TextFormat("./src/shaders/box_blur.fs", GLSL_VERSION));
-            shaders[SHADER_DILATION] = LoadShader(0, TextFormat("./src/shaders/dilation.fs", GLSL_VERSION));
-            shaders[SHADER_DOF] = LoadShader(0, TextFormat("./src/shaders/coc_blur.fs", GLSL_VERSION));
-
-            boxBlurParamsLoc = GetShaderLocation(shaders[SHADER_BLUR], "box_blur_settings");
-            boxBlurScreenTexLoc = GetShaderLocation(shaders[SHADER_BLUR], "screen_texture");
-            
-            dilationScreenTexLoc = GetShaderLocation(shaders[SHADER_DILATION], "screen_texture");
-            dilationParamsLoc = GetShaderLocation(shaders[SHADER_DILATION], "dilation_settings");
-
-            blurRadLoc = GetShaderLocation(shaders[SHADER_DOF], "max_blur_radius");
-            cocTexLoc = GetShaderLocation(shaders[SHADER_DOF], "screen_texture");
-            blurredTexLoc = GetShaderLocation(shaders[SHADER_DOF], "blurred_texture");
-
-            loadTextures();
-        }
-    
+    BoxBlurDof();
+    ~BoxBlurDof();
     void shaderScreenTex(Lights* lightShader);
     void shaderBlur();
     void shaderDilation();

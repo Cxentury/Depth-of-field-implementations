@@ -81,6 +81,7 @@ void Utils::unloadScreenAndDepthTex(){
 void Utils::unloadTextures(){
     UnloadRenderTexture(Utils::sScreen_tex);
     UnloadRenderTexture(Utils::sCoC_tex);
+    UnloadShader(Utils::cocShader);
     UnloadTexture(Utils::background);
     UnloadModel(Utils::scene);
 }
