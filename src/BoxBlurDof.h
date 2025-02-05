@@ -6,11 +6,6 @@
 #include "utils.h"
 #include "lights.h"
 
-#define GLSL_VERSION 330
-#if defined(PLATFORM_WEB)
-    #include <emscripten/emscripten.h>
-#endif
-
 typedef enum{
     SHADER_BLUR = 0,
     SHADER_DILATION,

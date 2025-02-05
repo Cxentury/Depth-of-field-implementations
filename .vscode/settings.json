@@ -7,5 +7,10 @@
 		"**/.DS_Store": true,
 		"**/*.o": true,
 		"**/*.exe": true,
+	},
+	"files.associations": {
+		"array": "cpp",
+		"iterator": "cpp",
+		"iostream": "cpp"
 	}
 }

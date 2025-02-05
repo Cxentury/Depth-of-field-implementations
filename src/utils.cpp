@@ -30,6 +30,43 @@ void Utils::init(){
     Utils::screenTexLoc = GetShaderLocation(cocShader, "scren_texture");
 }
 
+RenderTexture2D Utils::LoadRenderTextureRGB8(int width, int height)
+{
+    RenderTexture2D target = { 0 };
+
+    target.id = rlLoadFramebuffer(); // Load an empty framebuffer
+
+    if (target.id > 0)
+    {
+        rlEnableFramebuffer(target.id);
+
+        target.texture.id = rlLoadTexture(NULL, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8, 1);
+        target.texture.width = width;
+        target.texture.height = height;
+        target.texture.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8;
+        target.texture.mipmaps = 1;
+
+        // Create depth renderbuffer/texture
+        target.depth.id = rlLoadTextureDepth(width, height, true);
+        target.depth.width = width;
+        target.depth.height = height;
+        target.depth.format = 19;       //DEPTH_COMPONENT_24BIT?
+        target.depth.mipmaps = 1;
+
+        // Attach color texture and depth renderbuffer/texture to FBO
+        rlFramebufferAttach(target.id, target.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
+        rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER, 0);
+
+        // Check if fbo is complete with attachments (valid)
+        if (rlFramebufferComplete(target.id)) TRACELOG(LOG_INFO, "FBO: [ID %i] Framebuffer object created successfully", target.id);
+
+        rlDisableFramebuffer();
+    }
+    else TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
+
+    return target;
+}
+
 RenderTexture2D Utils::LoadRenderTextureRGBA16(int width, int height)
 {
     RenderTexture2D target = { 0 };
@@ -89,13 +126,6 @@ void Utils::unloadTextures(){
 void Utils::draw_scene(){
     BeginMode3D(Utils::camera);
         DrawModel(Utils::scene, {0,0,0}, 1.2, WHITE);
-        // DrawGrid(10, 1.0f);
-        // for (int i = 0; i < MAX_LIGHTS; i++)
-        // {
-        //     if (lights[i].enabled) DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
-        //     else DrawSphereWires(lights[i].position, 0.2f, 8, 8, ColorAlpha(lights[i].color, 0.3f));
-        // }
-
     EndMode3D();
 }
 
@@ -118,7 +148,7 @@ void Utils::onResize(){
 
 void Utils::drawUI(){
     ImGui::Begin("DoF settings");
-    ImGui::SliderInt("Technique",&Utils::sTechnique, 0,2);
+    ImGui::SliderInt("Technique",&Utils::sTechnique, 0,3);
     ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,30.0f);
     ImGui::End();       
 }

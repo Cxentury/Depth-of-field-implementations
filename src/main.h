@@ -6,6 +6,7 @@
 #include "boxBlurDof.h"
 #include "accumulationDoF.h"
 #include "singlePassDoF.h"
+#include "gatherBasedDoF.h"
 
 #define GLSL_VERSION 330
 #if defined(PLATFORM_WEB)

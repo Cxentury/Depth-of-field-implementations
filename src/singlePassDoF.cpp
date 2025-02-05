@@ -2,7 +2,7 @@
 
 SinglePassDoF::SinglePassDoF(/* args */)
 {
-    SinglePassDoFShader = LoadShader(0, "./src/shaders/single_pass.fs");
+    SinglePassDoFShader = LoadShader(0, "./src/shaders/singlepass/single_pass.fs");
     screenTexLoc = GetShaderLocation(SinglePassDoFShader,"screen_texture");
     lensSettingsLoc = GetShaderLocation(SinglePassDoFShader,"lens_settings");
     farPlaneLoc = GetShaderLocation(SinglePassDoFShader,"far_plane");

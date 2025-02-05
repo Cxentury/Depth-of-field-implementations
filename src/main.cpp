@@ -19,6 +19,7 @@ int main()
     BoxBlurDof boxBlurDof = BoxBlurDof();
     AccumulationDoF accumulationDoF = AccumulationDoF();
     SinglePassDoF singlePassDoF = SinglePassDoF();
+    GatherBasedDoF gatherBadedDoF = GatherBasedDoF();
 
     Lights lights = Lights();
 
@@ -62,6 +63,8 @@ int main()
             accumulationDoF.render(&lights);
         else if(Utils::sTechnique == Utils::DOF_SINGLEPASS)
             singlePassDoF.render(&lights);
+        else if(Utils::sTechnique == Utils::DOF_GATHER_BASED)
+            gatherBadedDoF.render(&lights);
         //----------------------------------------------------------------------------------
     }
 

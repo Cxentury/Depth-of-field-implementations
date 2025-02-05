@@ -2,9 +2,9 @@
 
 BoxBlurDof::BoxBlurDof(){
 
-    shaders[SHADER_BLUR] = LoadShader(0, TextFormat("./src/shaders/box_blur.fs", GLSL_VERSION));
-    shaders[SHADER_DILATION] = LoadShader(0, TextFormat("./src/shaders/dilation.fs", GLSL_VERSION));
-    shaders[SHADER_DOF] = LoadShader(0, TextFormat("./src/shaders/coc_blur.fs", GLSL_VERSION));
+    shaders[SHADER_BLUR] = LoadShader(0, TextFormat("./src/shaders/boxblur/box_blur.fs", GLSL_VERSION));
+    shaders[SHADER_DILATION] = LoadShader(0, TextFormat("./src/shaders/boxblur/dilation.fs", GLSL_VERSION));
+    shaders[SHADER_DOF] = LoadShader(0, TextFormat("./src/shaders/boxblur/coc_blur.fs", GLSL_VERSION));
 
     boxBlurParamsLoc = GetShaderLocation(shaders[SHADER_BLUR], "box_blur_settings");
     boxBlurScreenTexLoc = GetShaderLocation(shaders[SHADER_BLUR], "screen_texture");
@@ -103,7 +103,7 @@ void BoxBlurDof::render(Lights* lights){
 
     //Depth and screen texture
     BeginTextureMode(Utils::sCoC_tex);
-        ClearBackground(RAYWHITE);
+        ClearBackground(Utils::sClearColor);
             rlDisableColorBlend();
             Utils::drawCoC();
             rlEnableColorBlend();
@@ -112,7 +112,7 @@ void BoxBlurDof::render(Lights* lights){
     shaderBlur();
     shaderDilation();
     BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(Utils::sClearColor);
         shaderDoF();
 
         rlImGuiBegin();	
