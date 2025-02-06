@@ -10,15 +10,20 @@ GatherBasedDoF::GatherBasedDoF(/* args */)
 
     shaderCoC = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/coc.fs", GLSL_VERSION));
     shaderDS = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/downsample.fs", GLSL_VERSION));
-    
+    shaderCoCNearMaxFilter = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/nearCoCMaxFilter.fs", GLSL_VERSION));
     shaderCoCNearBlur = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/nearCoCBlur.fs", GLSL_VERSION));
+    
     shaderCoCTexLoc = GetShaderLocation(shaderCoC,"screen_texture");
     lensSettingsLoc = GetShaderLocation(shaderCoC, "lens_settings");
     
     shaderDsScreenLoc = GetShaderLocation(shaderDS, "screen_texture");
     shaderDsCoCLoc = GetShaderLocation(shaderDS, "coc_texture");
 
-    shaderCoCNearBlurTexLoc = GetShaderLocation(shaderCoCNearBlur, "coc_texture");
+    shaderCoCNearTexLoc = GetShaderLocation(shaderCoCNearMaxFilter, "coc_texture");
+    shaderCoCNearMaxTexLoc = GetShaderLocation(shaderCoCNearMaxFilter, "coc_texture_max");
+    horizontalPassLoc = GetShaderLocation(shaderCoCNearMaxFilter, "horizontal_pass");
+    horizontalPassBlurLoc = GetShaderLocation(shaderCoCNearBlur, "horizontal_pass");
+    shaderCoCNearBlurTexLoc = GetShaderLocation(shaderCoCNearBlur, "coc_texture_max");
 }
 
 GatherBasedDoF::~GatherBasedDoF()
@@ -33,12 +38,28 @@ void GatherBasedDoF::render(Lights* lights){
     screenTexPass();
     cocTexPass();
     downSamplePass();
-    cocNearPass();
 
+
+    //MAX FILTER
+    BeginTextureMode(cocNearBlurred);
+        ClearBackground(BLANK);
+    EndTextureMode();
+
+    //Horizontal max filter pass
+    cocNearMaxFilterPass(true);
+    //Vertical max filter pass
+    cocNearMaxFilterPass(false);
+
+    //BLUR OF MAX FILTER
+    cocNearBlurPass(true);
+    cocNearBlurPass(false);
+    
     BeginDrawing();
         // ClearBackground(RAYWHITE);
-        // DrawTextureRec(downsamplePass.texColor, (Rectangle){ 0, 0, (float)cocTex.texture.width, (float)-cocTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
-        DrawTextureRec(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocTex.texture.width, (float)-cocTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+        // DrawTextureRec(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocTex.texture.width, (float)-cocTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+        DrawTexturePro(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocNearBlurred.texture.width, (float)-cocNearBlurred.texture.height },
+                (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
+
         rlImGuiBegin();	
             drawUI();
         rlImGuiEnd();
@@ -89,15 +110,41 @@ void GatherBasedDoF::downSamplePass(){
     EndTextureMode();
 }
 
-void GatherBasedDoF::cocNearPass(){
+void GatherBasedDoF::cocNearMaxFilterPass(bool horizontal){
+    horizontalPass = horizontal;
+
+    SetTextureFilter(cocNearBlurred.texture, TEXTURE_FILTER_BILINEAR);
+    SetTextureWrap(cocNearBlurred.texture, TEXTURE_WRAP_CLAMP);
+
     BeginTextureMode(cocNearBlurred);
-        ClearBackground(RAYWHITE);
+        // ClearBackground(RAYWHITE);
+        rlDisableColorBlend();
+
+            BeginShaderMode(shaderCoCNearMaxFilter),
+                SetShaderValue(shaderCoCNearMaxFilter,horizontalPassLoc,&horizontalPass,RL_SHADER_UNIFORM_INT);
+                SetShaderValueTexture(shaderCoCNearMaxFilter,shaderCoCNearTexLoc,cocTex.texture);
+                SetShaderValueTexture(shaderCoCNearMaxFilter,shaderCoCNearMaxTexLoc,cocNearBlurred.texture);
+                DrawTextureRec(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocNearBlurred.texture.width, (float)-cocNearBlurred.texture.height }, (Vector2){ 0, 0 }, WHITE);
+            EndShaderMode();
+        
+        rlEnableColorBlend();
+    EndTextureMode();
+}
+
+void GatherBasedDoF::cocNearBlurPass(bool horizontal){
+
+    horizontalPass = horizontal;
+
+    BeginTextureMode(cocNearBlurred);
+        // ClearBackground(RAYWHITE);
         rlDisableColorBlend();
             BeginShaderMode(shaderCoCNearBlur),
-                SetShaderValueTexture(shaderCoCNearBlur,shaderCoCNearBlurTexLoc,cocTex.texture);
-                DrawTextureRec(DSTex.texture, (Rectangle){ 0, 0, (float)DSTex.texture.width, (float)-DSTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+                SetShaderValue(shaderCoCNearBlur,horizontalPassBlurLoc,&horizontalPass,RL_SHADER_UNIFORM_INT);
+                SetShaderValueTexture(shaderCoCNearBlur,shaderCoCNearBlurTexLoc,cocNearBlurred.texture);
+                DrawTextureRec(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocNearBlurred.texture.width, (float)-cocNearBlurred.texture.height }, (Vector2){ 0, 0 }, WHITE);
             EndShaderMode();
-            rlEnableColorBlend();
+        
+        rlEnableColorBlend();
     EndTextureMode();
 }
 

@@ -37,17 +37,23 @@ class GatherBasedDoF
         
         Shader shaderCoC;
         Shader shaderDS;
+        Shader shaderCoCNearMaxFilter;
         Shader shaderCoCNearBlur;
-
         
         int shaderCoCTexLoc;
         int lensSettingsLoc;
-
         //DS = downsample;
         int shaderDsScreenLoc;
         int shaderDsCoCLoc;
 
+        bool horizontalPass = true;
+        int horizontalPassLoc;
+
+        int shaderCoCNearTexLoc;
         //huge
+        int shaderCoCNearMaxTexLoc;
+        
+        int horizontalPassBlurLoc;
         int shaderCoCNearBlurTexLoc;
         
     public:
@@ -58,7 +64,8 @@ class GatherBasedDoF
         void screenTexPass();
         void cocTexPass();
         void downSamplePass();
-        void cocNearPass();
+        void cocNearMaxFilterPass(bool horizontal = true);
+        void cocNearBlurPass(bool horizontal = true);
 };
 
 #endif

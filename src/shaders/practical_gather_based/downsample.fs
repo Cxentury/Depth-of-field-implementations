@@ -14,42 +14,42 @@ void main()
 {
     vec2 pixel_size = 1.0 / textureSize(screen_texture, 0);
 
-    vec2 tex_coord_00 = fragTexCoord + vec2(-0.25, -0.25) * pixel_size;
-    vec2 tex_coord_10 = fragTexCoord + vec2(0.25, -0.25) * pixel_size;
-    vec2 tex_coord_01 = fragTexCoord + vec2(-0.25, 0.25) * pixel_size;
-    vec2 tex_coord_11 = fragTexCoord + vec2(0.25, 0.25) * pixel_size;
+    vec2 texCoord00 = fragTexCoord + vec2(-0.25, -0.25) * pixel_size;
+    vec2 texCoord10 = fragTexCoord + vec2(0.25, -0.25) * pixel_size;
+    vec2 texCoord01 = fragTexCoord + vec2(-0.25, 0.25) * pixel_size;
+    vec2 texCoord11 = fragTexCoord + vec2(0.25, 0.25) * pixel_size;
 
     vec4 color = textureLod(screen_texture, fragTexCoord,0);
-    vec4 coc = texture(coc_texture, tex_coord_00, 0);
+    vec4 coc = texture(coc_texture, texCoord00, 0);
 
-    float coc_far_00 = textureLod(coc_texture, tex_coord_00, 0).y;
-    float coc_far_10 = textureLod(coc_texture, tex_coord_10, 0).y;
-    float coc_far_01 = textureLod(coc_texture, tex_coord_01, 0).y;
-    float coc_far_11 = textureLod(coc_texture, tex_coord_11, 0).y;
+    float cocFar00 = textureLod(coc_texture, texCoord00, 0).y;
+    float cocFar10 = textureLod(coc_texture, texCoord10, 0).y;
+    float cocFar01 = textureLod(coc_texture, texCoord01, 0).y;
+    float cocFar11 = textureLod(coc_texture, texCoord11, 0).y;
 
-    float weight_00 = 1000.0f;
-    vec4 weighted_color = weight_00 * textureLod(screen_texture, tex_coord_00, 0);
-    float weight_total = weight_00;
+    float weight00 = 1000.0f;
+    vec4 weightedColor = weight00 * textureLod(screen_texture, texCoord00, 0);
+    float weightTotal = weight00;
 
-    float weight_10 = 1.0f / (abs(coc_far_00 - coc_far_10) + 0.001f);
-    weighted_color  = weight_10 * textureLod(screen_texture, tex_coord_01, 0);
-    weight_total += weight_10;
+    float weight10 = 1.0f / (abs(cocFar00 - cocFar10) + 0.001f);
+    weightedColor  = weight10 * textureLod(screen_texture, texCoord01, 0);
+    weightTotal += weight10;
 
-    float weight_01 = 1.0f / (abs(coc_far_00 - coc_far_10) + 0.001f);
-    weighted_color  = weight_10 * textureLod(screen_texture, tex_coord_01, 0);
-    weight_total += weight_01;
+    float weight01 = 1.0f / (abs(cocFar00 - cocFar10) + 0.001f);
+    weightedColor  = weight10 * textureLod(screen_texture, texCoord01, 0);
+    weightTotal += weight01;
 
-    float weight_11 = 1.0f / (abs(coc_far_00 - coc_far_11) + 0.001f);
-    weighted_color  = weight_11 * textureLod(screen_texture, tex_coord_11, 0);
-    weight_total += weight_11;
+    float weight11 = 1.0f / (abs(cocFar00 - cocFar11) + 0.001f);
+    weightedColor  = weight11 * textureLod(screen_texture, texCoord11, 0);
+    weightTotal += weight11;
 
-    weighted_color /= weight_total;
-    weighted_color *= coc.y;
+    weightedColor /= weightTotal;
+    weightedColor *= coc.y;
 
-    // finalColor = weighted_color;
+    // finalColor = weightedColor;
     downsampled_color = color;
     downsampled_coc = coc;
-    downsampled_coc_mul_far = weighted_color;
+    downsampled_coc_mul_far = weightedColor;
 
 
 }

@@ -1,40 +1,45 @@
 #version 330 core
 
 in vec2 fragTexCoord;
+in vec4 fragColor;
 
 out vec4 finalColor;
 
-uniform sampler2D coc_texture;
+uniform sampler2D coc_texture_max;
+uniform bool horizontal_pass;
+
+void main() {
+
+    vec2 pixelSize = 1.0 / textureSize(coc_texture_max, 0);
+    
+    float color = texture(coc_texture_max,fragTexCoord).r;
+    float weight = 1.0;
+
+	int radius = 6;
+    vec2 offset;
+
+	for(int i = 1; i <= radius; i++){
+        
+        if(horizontal_pass){
+
+            offset = vec2(i,0) * pixelSize;
+
+            //Horizontal pass
+            color += texture(coc_texture_max, clamp(fragTexCoord + offset, vec2(0,0), vec2(1,1))).r;
+            color += texture(coc_texture_max, clamp(fragTexCoord - offset, vec2(0,0), vec2(1,1))).r;
+        }
+        else{
+            
+            offset = vec2(0,i) * pixelSize;
+            
+            //Vertical pass
+            color += texture(coc_texture_max, clamp(fragTexCoord + offset, vec2(0,0), vec2(1,1))).r;
+            color += texture(coc_texture_max, clamp(fragTexCoord - offset, vec2(0,0), vec2(1,1))).r;
+        }
+        weight+=2.0;
+	}
 
 
-void main()
-{
-    vec2 pixel_size = 1.0 / textureSize(coc_texture, 0);
-    float maxVal = texture(coc_texture, fragTexCoord).r;
-
-    //Horizontal pass
-    for(int i = 1; i < 6; i++){
-        float leftVal = texture(coc_texture, fragTexCoord + vec2(i,0) * pixel_size).r;
-        float rightVal = texture(coc_texture, fragTexCoord + vec2(-i,0) * pixel_size).r;
-
-        if(leftVal > maxVal)
-            maxVal = leftVal;
-        if(rightVal > maxVal)
-            maxVal = rightVal;
-    }
-
-    //Vertical pass
-    for(int i = 1; i < 6; i++){
-        float upVal = texture(coc_texture, fragTexCoord + vec2(0,i) * pixel_size).r;
-        float bottomVal = texture(coc_texture, fragTexCoord + vec2(0,-i) * pixel_size).r;
-
-        if(upVal > maxVal)
-            maxVal = upVal;
-        if(bottomVal > maxVal)
-            maxVal = bottomVal;
-    }
-
-
-    finalColor.rgb = vec3(0);
-    finalColor.r = maxVal;
+	color /= weight;
+	finalColor.r = color;
 }

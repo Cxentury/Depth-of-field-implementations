@@ -11,6 +11,7 @@
 	"files.associations": {
 		"array": "cpp",
 		"iterator": "cpp",
-		"iostream": "cpp"
+		"iostream": "cpp",
+		"cstdlib": "c"
 	}
 }
