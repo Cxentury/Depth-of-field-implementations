@@ -13,24 +13,23 @@
 #include "imgui.h"
 #include "raymath.h"
 
-#define GLSL_VERSION 330
+#define GLSL_VERSION 430
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
 #endif
-
 //Class with things commmon to all dof techniques
 class Utils{
     private:
-        static RenderTexture2D LoadRenderTextureRGBA16(int width, int height);
     public:
-
-        enum{
-            DOF_BOXBLUR = 0,
-            DOF_ACCUMULATION ,
-            DOF_SINGLEPASS,
-            DOF_GATHER_BASED
-        };
-
+    
+    enum{
+        DOF_BOXBLUR = 0,
+        DOF_ACCUMULATION ,
+        DOF_SINGLEPASS,
+        DOF_GATHER_BASED
+    };
+    
+        static RenderTexture2D LoadRenderTextureRGBA16(int width, int height);
         static RenderTexture2D LoadRenderTextureRGB8(int width, int height);
         static Texture2D background;
         static int sScreen_width;
@@ -38,7 +37,6 @@ class Utils{
         static int sTechnique;
         static RenderTexture2D sScreen_tex;
         static RenderTexture2D sCoC_tex;
-
         static Camera camera;
         static Model scene;
         static Shader cocShader;

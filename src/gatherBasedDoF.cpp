@@ -1,17 +1,18 @@
 #include "GatherBasedDoF.h"
+#include "glad.h"
 
 GatherBasedDoF::GatherBasedDoF(/* args */)
 {   
-    cocTex = Utils::LoadRenderTextureRGB8(Utils::sScreen_width, Utils::sScreen_height);
-    DSTex = Utils::LoadRenderTextureRGB8(Utils::sScreen_width/4, Utils::sScreen_height/4);
-    cocNearBlurred = Utils::LoadRenderTextureRGB8(Utils::sScreen_width/4, Utils::sScreen_height/4);
-    
-    downsamplePass = LoadMultiRenderTexture(Utils::sScreen_width/4, Utils::sScreen_height/4);
+    loadTextures();
 
     shaderCoC = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/coc.fs", GLSL_VERSION));
     shaderDS = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/downsample.fs", GLSL_VERSION));
     shaderCoCNearMaxFilter = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/nearCoCMaxFilter.fs", GLSL_VERSION));
     shaderCoCNearBlur = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/nearCoCBlur.fs", GLSL_VERSION));
+    shaderComputation = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/computation.fs", GLSL_VERSION));
+    shaderFill = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/fill.fs", GLSL_VERSION));
+    shaderComposite = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/composite.fs", GLSL_VERSION));
+    shaderComposite2 = LoadShader(0, TextFormat("./src/shaders/practical_gather_based/composite2.fs", GLSL_VERSION));
     
     shaderCoCTexLoc = GetShaderLocation(shaderCoC,"screen_texture");
     lensSettingsLoc = GetShaderLocation(shaderCoC, "lens_settings");
@@ -24,13 +25,59 @@ GatherBasedDoF::GatherBasedDoF(/* args */)
     horizontalPassLoc = GetShaderLocation(shaderCoCNearMaxFilter, "horizontal_pass");
     horizontalPassBlurLoc = GetShaderLocation(shaderCoCNearBlur, "horizontal_pass");
     shaderCoCNearBlurTexLoc = GetShaderLocation(shaderCoCNearBlur, "coc_texture_max");
+
+    kernelScaleLoc = GetShaderLocation(shaderComputation, "kernel_scale");
+    shaderComputationTexturesLoc[0] = GetShaderLocation(shaderComputation, "downsampled_color");
+    shaderComputationTexturesLoc[1] = GetShaderLocation(shaderComputation, "downsampled_coc");
+    shaderComputationTexturesLoc[2] = GetShaderLocation(shaderComputation, "downsampled_coc_mul_far");
+    shaderComputationTexturesLoc[3] = GetShaderLocation(shaderComputation, "coc_near_blurred");
+
+    shaderCompositeTexturesLoc[0] = GetShaderLocation(shaderComposite, "screen_texture");
+    shaderCompositeTexturesLoc[1] = GetShaderLocation(shaderComposite, "coc_texture");
+    shaderCompositeTexturesLoc[2] = GetShaderLocation(shaderComposite, "downsampled_coc");
+    shaderCompositeTexturesLoc[3] = GetShaderLocation(shaderComposite, "coc_near_blurred");
+    shaderCompositeTexturesLoc[4] = GetShaderLocation(shaderComposite, "near_field");
+    shaderCompositeTexturesLoc[5] = GetShaderLocation(shaderComposite, "far_field");
+    shaderCompositeBlendLoc = GetShaderLocation(shaderComposite, "blend");
+    
+    shaderComposite2TexturesLoc[0] = GetShaderLocation(shaderComposite2,"prev_composite");
+    shaderComposite2TexturesLoc[1] = GetShaderLocation(shaderComposite2,"coc_near_blurred");
+    shaderComposite2TexturesLoc[2] = GetShaderLocation(shaderComposite2,"near_field");
+    shaderComposite2BlendLoc = GetShaderLocation(shaderComposite2, "blend");
+
+    shaderFillTexturesLoc[0] = GetShaderLocation(shaderFill, "downsampled_coc");
+    shaderFillTexturesLoc[1] = GetShaderLocation(shaderFill, "coc_near_blurred");
+    shaderFillTexturesLoc[2] = GetShaderLocation(shaderFill, "dof_near");
+    shaderFillTexturesLoc[3] = GetShaderLocation(shaderFill, "dof_far");
 }
 
 GatherBasedDoF::~GatherBasedDoF()
 {
-    UnloadRenderTexture(cocTex);
-    UnloadMultiRenderTexture(downsamplePass);
 }
+
+void GatherBasedDoF::loadTextures(){
+    
+    cocTex = Utils::LoadRenderTextureRGB8(Utils::sScreen_width, Utils::sScreen_height);
+    DSTex = Utils::LoadRenderTextureRGB8(Utils::sScreen_width/2, Utils::sScreen_height/2);
+    cocNearBlurredTex = Utils::LoadRenderTextureRGB8(Utils::sScreen_width/2, Utils::sScreen_height/2);
+    
+    downsamplePassTex = LoadMultiRenderTexture(Utils::sScreen_width/2, Utils::sScreen_height/2);
+    computationPassTex = LoadMultiRenderTexture(Utils::sScreen_width/2, Utils::sScreen_height/2);
+    fillPassTex = LoadMultiRenderTexture(Utils::sScreen_width/2, Utils::sScreen_height/2);
+    prevCompositeTex = Utils::LoadRenderTextureRGBA16(Utils::sScreen_width, Utils::sScreen_height);
+}
+
+void GatherBasedDoF::unloadTextures(){
+    UnloadRenderTexture(cocTex);
+    UnloadRenderTexture(DSTex);
+    UnloadRenderTexture(cocNearBlurredTex);
+    UnloadRenderTexture(prevCompositeTex);
+    
+    UnloadMultiRenderTexture(downsamplePassTex);
+    UnloadMultiRenderTexture(computationPassTex);
+    UnloadMultiRenderTexture(fillPassTex);
+}
+
 
 void GatherBasedDoF::render(Lights* lights){
     lights->updateShaderValues(true);
@@ -41,7 +88,7 @@ void GatherBasedDoF::render(Lights* lights){
 
 
     //MAX FILTER
-    BeginTextureMode(cocNearBlurred);
+    BeginTextureMode(cocNearBlurredTex);
         ClearBackground(BLANK);
     EndTextureMode();
 
@@ -54,11 +101,16 @@ void GatherBasedDoF::render(Lights* lights){
     cocNearBlurPass(true);
     cocNearBlurPass(false);
     
+    computationPass();
+    fillPass();
+
     BeginDrawing();
         // ClearBackground(RAYWHITE);
-        // DrawTextureRec(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocTex.texture.width, (float)-cocTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
-        DrawTexturePro(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocNearBlurred.texture.width, (float)-cocNearBlurred.texture.height },
-                (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
+        // DrawTextureRec(cocNearBlurredTex.texture, (Rectangle){ 0, 0, (float)cocTex.texture.width, (float)-cocTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+        compositePass();
+
+        // DrawTexturePro(cocNearBlurredTex.texture, (Rectangle){ 0, 0, (float)cocNearBlurredTex.texture.width, (float)-cocNearBlurredTex.texture.height },
+        //         (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
 
         rlImGuiBegin();	
             drawUI();
@@ -94,7 +146,7 @@ void GatherBasedDoF::downSamplePass(){
     //Downsample, does not work without BeginTextureMode, so I just put a random texture with same size
     BeginTextureMode(DSTex);
             rlDisableColorBlend();
-                rlEnableFramebuffer(downsamplePass.id);
+                rlEnableFramebuffer(downsamplePassTex.id);
                     
                     rlActiveDrawBuffers(3);
                     rlClearScreenBuffers();
@@ -113,18 +165,18 @@ void GatherBasedDoF::downSamplePass(){
 void GatherBasedDoF::cocNearMaxFilterPass(bool horizontal){
     horizontalPass = horizontal;
 
-    SetTextureFilter(cocNearBlurred.texture, TEXTURE_FILTER_BILINEAR);
-    SetTextureWrap(cocNearBlurred.texture, TEXTURE_WRAP_CLAMP);
+    SetTextureFilter(cocNearBlurredTex.texture, TEXTURE_FILTER_BILINEAR);
+    SetTextureWrap(cocNearBlurredTex.texture, TEXTURE_WRAP_CLAMP);
 
-    BeginTextureMode(cocNearBlurred);
+    BeginTextureMode(cocNearBlurredTex);
         // ClearBackground(RAYWHITE);
         rlDisableColorBlend();
 
             BeginShaderMode(shaderCoCNearMaxFilter),
                 SetShaderValue(shaderCoCNearMaxFilter,horizontalPassLoc,&horizontalPass,RL_SHADER_UNIFORM_INT);
                 SetShaderValueTexture(shaderCoCNearMaxFilter,shaderCoCNearTexLoc,cocTex.texture);
-                SetShaderValueTexture(shaderCoCNearMaxFilter,shaderCoCNearMaxTexLoc,cocNearBlurred.texture);
-                DrawTextureRec(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocNearBlurred.texture.width, (float)-cocNearBlurred.texture.height }, (Vector2){ 0, 0 }, WHITE);
+                SetShaderValueTexture(shaderCoCNearMaxFilter,shaderCoCNearMaxTexLoc,cocNearBlurredTex.texture);
+                DrawTextureRec(cocNearBlurredTex.texture, (Rectangle){ 0, 0, (float)cocNearBlurredTex.texture.width, (float)-cocNearBlurredTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
             EndShaderMode();
         
         rlEnableColorBlend();
@@ -135,23 +187,114 @@ void GatherBasedDoF::cocNearBlurPass(bool horizontal){
 
     horizontalPass = horizontal;
 
-    BeginTextureMode(cocNearBlurred);
+    BeginTextureMode(cocNearBlurredTex);
         // ClearBackground(RAYWHITE);
         rlDisableColorBlend();
             BeginShaderMode(shaderCoCNearBlur),
                 SetShaderValue(shaderCoCNearBlur,horizontalPassBlurLoc,&horizontalPass,RL_SHADER_UNIFORM_INT);
-                SetShaderValueTexture(shaderCoCNearBlur,shaderCoCNearBlurTexLoc,cocNearBlurred.texture);
-                DrawTextureRec(cocNearBlurred.texture, (Rectangle){ 0, 0, (float)cocNearBlurred.texture.width, (float)-cocNearBlurred.texture.height }, (Vector2){ 0, 0 }, WHITE);
+                SetShaderValueTexture(shaderCoCNearBlur,shaderCoCNearBlurTexLoc,cocNearBlurredTex.texture);
+                DrawTextureRec(cocNearBlurredTex.texture, (Rectangle){ 0, 0, (float)cocNearBlurredTex.texture.width, (float)-cocNearBlurredTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
             EndShaderMode();
         
         rlEnableColorBlend();
     EndTextureMode();
 }
 
+void GatherBasedDoF::computationPass(){
+    BeginTextureMode(DSTex);
+            ClearBackground(RAYWHITE);
+            rlDisableColorBlend();
+                rlEnableFramebuffer(computationPassTex.id);
+                    
+                    rlActiveDrawBuffers(2);
+                    rlClearScreenBuffers();
+                    
+                    BeginShaderMode(shaderComputation),
+                        SetShaderValue(shaderComputation,kernelScaleLoc,&kernelScale, RL_SHADER_UNIFORM_FLOAT);
+                        SetShaderValueTexture(shaderComputation,shaderComputationTexturesLoc[0], downsamplePassTex.texture0);
+                        SetShaderValueTexture(shaderComputation,shaderComputationTexturesLoc[1], downsamplePassTex.texture1);
+                        SetShaderValueTexture(shaderComputation,shaderComputationTexturesLoc[2], downsamplePassTex.texture2);
+                        SetShaderValueTexture(shaderComputation,shaderComputationTexturesLoc[3], cocNearBlurredTex.texture);
+
+                        DrawTextureRec(DSTex.texture, (Rectangle){ 0, 0, (float)DSTex.texture.width, (float)-DSTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+                    EndShaderMode();
+
+                rlDisableFramebuffer();
+            rlEnableColorBlend();
+    EndTextureMode();
+}
+
+void GatherBasedDoF::fillPass(){
+    BeginTextureMode(DSTex);
+        ClearBackground(RAYWHITE);
+        rlDisableColorBlend();
+            rlEnableFramebuffer(fillPassTex.id);
+                    
+                rlActiveDrawBuffers(2);
+                rlClearScreenBuffers();
+
+                BeginShaderMode(shaderFill);
+                    //Raylib limits the number of maximum active textures to 4, why..
+                    SetShaderValueTexture(shaderFill,shaderFillTexturesLoc[0],downsamplePassTex.texture1);
+                    SetShaderValueTexture(shaderFill,shaderFillTexturesLoc[1],cocNearBlurredTex.texture);
+                    SetShaderValueTexture(shaderFill,shaderFillTexturesLoc[2],computationPassTex.texture0);
+                    SetShaderValueTexture(shaderFill,shaderFillTexturesLoc[3],computationPassTex.texture1);
+                    
+                    DrawTextureRec(DSTex.texture, (Rectangle){ 0, 0, (float)DSTex.texture.width, (float)-DSTex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+                EndShaderMode();
+
+            rlDisableFramebuffer();
+        rlEnableColorBlend();
+    EndTextureMode();
+
+}
+
+void GatherBasedDoF::compositePass(){
+    BeginTextureMode(prevCompositeTex);
+        ClearBackground(RAYWHITE);
+        rlDisableColorBlend();
+            BeginShaderMode(shaderComposite);
+                //Raylib limits the number of maximum active textures to 4, ...
+                SetShaderValue(shaderComposite,shaderCompositeBlendLoc,&blend,RL_SHADER_UNIFORM_FLOAT);
+                SetShaderValueTexture(shaderComposite,shaderCompositeTexturesLoc[0],Utils::sScreen_tex.texture);
+                SetShaderValueTexture(shaderComposite,shaderCompositeTexturesLoc[1],cocTex.texture);
+                SetShaderValueTexture(shaderComposite,shaderCompositeTexturesLoc[2],downsamplePassTex.texture1);
+                // SetShaderValueTexture(shaderComposite,shaderCompositeTexturesLoc[3],cocNearBlurredTex.texture);
+                // SetShaderValueTexture(shaderComposite,shaderCompositeTexturesLoc[4],computationPassTex.texture0);
+                SetShaderValueTexture(shaderComposite,shaderCompositeTexturesLoc[5],fillPassTex.texture1);
+                DrawTextureRec(Utils::sScreen_tex.texture, (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+            EndShaderMode();
+        rlEnableColorBlend();
+    EndTextureMode();
+
+    ClearBackground(RAYWHITE);
+    rlDisableColorBlend();
+        BeginShaderMode(shaderComposite2);
+            SetShaderValue(shaderComposite2,shaderComposite2BlendLoc,&blend,RL_SHADER_UNIFORM_FLOAT);
+            SetShaderValueTexture(shaderComposite2,shaderComposite2TexturesLoc[0],prevCompositeTex.texture);
+            SetShaderValueTexture(shaderComposite2,shaderComposite2TexturesLoc[1],cocNearBlurredTex.texture);
+            SetShaderValueTexture(shaderComposite2,shaderComposite2TexturesLoc[2],fillPassTex.texture0);
+            DrawTextureRec(Utils::sScreen_tex.texture, (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
+        EndShaderMode();
+    rlEnableColorBlend();
+}
 
 void GatherBasedDoF::drawUI(){
+
+    if(dofStrength >= .25f){
+        kernelScale = dofStrength;
+        blend = 1.0f;
+    }
+    else{
+        kernelScale = .25f;
+        blend = 4.0f * dofStrength;
+    }
+
     ImGui::Begin("DoF settings");
     ImGui::SliderInt("Technique",&Utils::sTechnique, 0,3);
+    ImGui::SliderFloat("Strength",&dofStrength, 0,3);
+    // ImGui::SliderFloat("kernel scale",&kernelScale, .1,2);
+    // ImGui::SliderFloat("Blend",&blend, .1,3);
     ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,30.0f);
     ImGui::End();
 }
@@ -171,25 +314,25 @@ MultiRenderTexture GatherBasedDoF::LoadMultiRenderTexture(int width, int height)
         rlEnableFramebuffer(target.id);
 
         // Create color texture: color
-        target.texColor.id = rlLoadTexture(NULL, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-        target.texColor.width = width;
-        target.texColor.height = height;
-        target.texColor.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        target.texColor.mipmaps = 1;
+        target.texture0.id = rlLoadTexture(NULL, width, height, PIXELFORMAT_UNCOMPRESSED_R16G16B16, 1);
+        target.texture0.width = width;
+        target.texture0.height = height;
+        target.texture0.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        target.texture0.mipmaps = 1;
         
         // Create color texture: normal
-        target.texNormal.id = rlLoadTexture(NULL, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-        target.texNormal.width = width;
-        target.texNormal.height = height;
-        target.texNormal.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        target.texNormal.mipmaps = 1;
+        target.texture1.id = rlLoadTexture(NULL, width, height, PIXELFORMAT_UNCOMPRESSED_R16G16B16, 1);
+        target.texture1.width = width;
+        target.texture1.height = height;
+        target.texture1.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        target.texture1.mipmaps = 1;
         
         // Create color texture: position
-        target.texPosition.id = rlLoadTexture(NULL, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
-        target.texPosition.width = width;
-        target.texPosition.height = height;
-        target.texPosition.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        target.texPosition.mipmaps = 1;
+        target.texture2.id = rlLoadTexture(NULL, width, height, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+        target.texture2.width = width;
+        target.texture2.height = height;
+        target.texture2.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+        target.texture2.mipmaps = 1;
 
         // Create depth texture
         target.texDepth.id = rlLoadTextureDepth(width, height, false);
@@ -199,9 +342,9 @@ MultiRenderTexture GatherBasedDoF::LoadMultiRenderTexture(int width, int height)
         target.texDepth.mipmaps = 1;
 
         // Attach color textures and depth textures to FBO
-        rlFramebufferAttach(target.id, target.texColor.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
-        rlFramebufferAttach(target.id, target.texNormal.id, RL_ATTACHMENT_COLOR_CHANNEL1, RL_ATTACHMENT_TEXTURE2D, 0);
-        rlFramebufferAttach(target.id, target.texPosition.id, RL_ATTACHMENT_COLOR_CHANNEL2, RL_ATTACHMENT_TEXTURE2D, 0);
+        rlFramebufferAttach(target.id, target.texture0.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
+        rlFramebufferAttach(target.id, target.texture1.id, RL_ATTACHMENT_COLOR_CHANNEL1, RL_ATTACHMENT_TEXTURE2D, 0);
+        rlFramebufferAttach(target.id, target.texture2.id, RL_ATTACHMENT_COLOR_CHANNEL2, RL_ATTACHMENT_TEXTURE2D, 0);
         rlFramebufferAttach(target.id, target.texDepth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER, 0);
         
         // Activate required color draw buffers
@@ -223,9 +366,9 @@ void GatherBasedDoF::UnloadMultiRenderTexture(MultiRenderTexture target)
     if (target.id > 0)
     {
         // Delete color texture attachments
-        rlUnloadTexture(target.texColor.id);
-        rlUnloadTexture(target.texNormal.id);
-        rlUnloadTexture(target.texPosition.id);
+        rlUnloadTexture(target.texture2.id);
+        rlUnloadTexture(target.texture1.id);
+        rlUnloadTexture(target.texture2.id);
 
         // NOTE: Depth texture is automatically queried
         // and deleted before deleting framebuffer

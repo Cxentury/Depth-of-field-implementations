@@ -9,10 +9,7 @@ std::vector<PoissonGenerator::Point> samplePoints;
 
 AccumulationDoF::AccumulationDoF(/* args */)
 {
-    PoissonGenerator::DefaultPRNG PRNG;
-    uint32_t gridSize = sampleCount;
-    samplePoints = PoissonGenerator::generateJitteredGridPoints(gridSize,PRNG,false,0.02f);
-    
+    generateSamples();
     SetRandomSeed((unsigned int)time(NULL));
     for (int i = 0; i < sampleCount; i++)
     {
@@ -22,6 +19,12 @@ AccumulationDoF::AccumulationDoF(/* args */)
 
 AccumulationDoF::~AccumulationDoF(){
     UnloadShader(accumulationShader);
+}
+
+void AccumulationDoF::generateSamples(){
+    PoissonGenerator::DefaultPRNG PRNG;
+    uint32_t gridSize = sampleCount;
+    samplePoints = PoissonGenerator::generatePoissonPoints(gridSize,PRNG);
 }
 
 void AccumulationDoF::render(Lights* lights){
@@ -100,8 +103,10 @@ void AccumulationDoF::render(Lights* lights){
 void AccumulationDoF::drawUI(Vector3* sunlightPos){
     ImGui::Begin("Accumulation settings");
     ImGui::SliderInt("Poisson / Random distribution",&randomSampling, 0,1);
-    ImGui::SliderInt("Number of Samples",&sampleCount, 0,300);
-    ImGui::SliderFloat("Offset factor",&offsetFactor, 0.01f,1.0f);
+    if (ImGui::SliderInt("Number of Samples",&sampleCount, 1,499)){
+        generateSamples();
+    };
+    ImGui::SliderFloat("Offset factor",&offsetFactor, 0.1f,3.0f);
     ImGui::SliderFloat3("Sunlight Position",&sunlightPos->x, 0.5f,15.0f);
     ImGui::End();
 }

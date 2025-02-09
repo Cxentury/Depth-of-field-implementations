@@ -36,22 +36,24 @@ int main()
     
     //--------------------------------------------------------------------------------------
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    SetTargetFPS(144);
     rlImGuiSetup(true);
     //--------------------------------------------------------------------------------------
     DisableCursor();    
-
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         if(IsWindowResized()){
             boxBlurDof.unloadTextures();
+            gatherBadedDoF.unloadTextures();
             Utils::onResize();
             boxBlurDof.loadTextures();
+            gatherBadedDoF.loadTextures();
+
             sleep(.1);
         }
         // Update
-        //----------------------------------------------------------------------------------
+        //------------------------------------------------------w----------------------------
         UpdateCamera(&Utils::camera, CAMERA_PERSPECTIVE);
         //----------------------------------------------------------------------------------
 
@@ -72,6 +74,8 @@ int main()
     //--------------------------------------------------------------------------------------
     // boxBlurDof.unloadTextures();
     Utils::unloadTextures();
+    boxBlurDof.unloadTextures();
+    gatherBadedDoF.unloadTextures();
     rlImGuiShutdown();
     CloseWindow();                  // Close window and OpenGL context
     //--------------------------------------------------------------------------------------

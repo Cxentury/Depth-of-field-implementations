@@ -11,7 +11,7 @@ private:
 public:
 
     int sampleCount = 250;
-    float offsetFactor = 0.1;
+    float offsetFactor = 0.257f;
     int randomSampling = 0;
 
     Shader accumulationShader = LoadShader(0,"./src/shaders/accumulation/accumulation.fs");
@@ -21,11 +21,12 @@ public:
     int nbSamplesLoc = GetShaderLocation(accumulationShader,"samples");
     int passThroughTextureLoc = GetShaderLocation(passThroughShader,"texture0");
     
-    Vector3 samples[300];
+    Vector3 samples[500];
 
     AccumulationDoF(/* args */);
     ~AccumulationDoF();
 
+    void generateSamples();
     void render(Lights* lights);
     void drawUI(Vector3* sunlightPos);
 };

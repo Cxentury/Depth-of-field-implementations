@@ -20,7 +20,7 @@ void main()
     
     vec2 offset;
 
-    for(int i = 1; i < 6; i++){
+    for(int i = 1; i <= 6; i++){
 
         
         if(horizontal_pass){

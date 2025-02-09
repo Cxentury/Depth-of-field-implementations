@@ -21,11 +21,6 @@ BoxBlurDof::BoxBlurDof(){
 }
 
 BoxBlurDof::~BoxBlurDof(){
-    UnloadRenderTexture(textures[BLUR_TEX]);
-    UnloadRenderTexture(textures[DILATION_TEX]);   
-    UnloadShader(shaders[SHADER_BLUR]);
-    UnloadShader(shaders[SHADER_DILATION]);
-    UnloadShader(shaders[SHADER_DOF]);
 }
 
 void BoxBlurDof::shaderScreenTex(Lights* lightShader){
