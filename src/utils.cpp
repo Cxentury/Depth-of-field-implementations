@@ -5,7 +5,8 @@
 int Utils::sScreen_width = 800;
 int Utils::sScreen_height = 450;
 
-Color Utils::sClearColor = {138, 155, 192, 255};
+// Color Utils::sClearColor = {138, 155, 192, 255};
+Color Utils::sClearColor = {133, 154, 229, 255};
 
 Camera Utils::camera = { 0 };
 RenderTexture2D Utils::sScreen_tex = {0};
@@ -17,6 +18,8 @@ Vector2 Utils::lensParams = (Vector2) {23.2, 9};
 int Utils::lensSettingsLoc = 0;
 int Utils::screenTexLoc = 0;
 int Utils::sTechnique = DOF_BOXBLUR;
+bool Utils::sAnimation = false;
+float Utils::sAnimationSpeed = 1.0;
 
 Model Utils::scene = {0};
 std::array<Vector3,4> Utils::positions = {(Vector3){0} ,(Vector3) { 1.0f, 4.0f, -3.0f},(Vector3){3.0f, 2.0f, -6.0f},(Vector3){-4.0f, 6.0f, -12.0f}};
@@ -24,7 +27,8 @@ std::array<Vector3,4> Utils::positions = {(Vector3){0} ,(Vector3) { 1.0f, 4.0f, 
 void Utils::init(){
     loadScreenAndDepthTex();
     Utils::background = LoadTexture("./images/Medieval city by A.Rocha.png");
-    Utils::scene = LoadModel("./scene/scene.obj");
+    // Utils::scene = LoadModel("./scene/scene1.obj");
+    Utils::scene = LoadModel("./scene/scene1.obj");
     Utils::cocShader = LoadShader(0,"./src/shaders/coc.fs");
     Utils::lensSettingsLoc = GetShaderLocation(cocShader, "lens_settings");
     Utils::screenTexLoc = GetShaderLocation(cocShader, "scren_texture");
@@ -147,8 +151,21 @@ void Utils::onResize(){
 }
 
 void Utils::drawUI(){
+    if(sAnimation){
+        lensParams.x=8.5 * sin(GetTime() * sAnimationSpeed) + 18.5;
+    }
     ImGui::Begin("DoF settings");
     ImGui::SliderInt("Technique",&Utils::sTechnique, 0,3);
-    ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,30.0f);
+    ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,120.0f);
+    ImGui::Checkbox("Animation",&Utils::sAnimation);
+    ImGui::SliderFloat("Animation speed", &Utils::sAnimationSpeed, .1,2);
+    ImGui::End();       
+}
+
+void Utils::drawUISimple(){
+    ImGui::Begin("DoF settings");
+    ImGui::SliderInt("Technique",&Utils::sTechnique, 0,3);
+    ImGui::Checkbox("Animation",&Utils::sAnimation);
+    ImGui::SliderFloat("Animation speed", &Utils::sAnimationSpeed, .1,2);
     ImGui::End();       
 }

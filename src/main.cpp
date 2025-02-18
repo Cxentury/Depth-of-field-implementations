@@ -12,10 +12,10 @@ int main()
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 450, "raylib");
     rlSetClipPlanes(0.1,1000);
-    
+    // SetTraceLogLevel(LOG_ERROR);
     BoxBlurDof boxBlurDof = BoxBlurDof();
     AccumulationDoF accumulationDoF = AccumulationDoF();
     SinglePassDoF singlePassDoF = SinglePassDoF();
@@ -36,7 +36,7 @@ int main()
     
     //--------------------------------------------------------------------------------------
 
-    SetTargetFPS(144);
+    SetTargetFPS(60);
     rlImGuiSetup(true);
     //--------------------------------------------------------------------------------------
     DisableCursor();    

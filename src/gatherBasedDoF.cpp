@@ -113,6 +113,7 @@ void GatherBasedDoF::render(Lights* lights){
         //         (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height },(Vector2){ 0, 0 }, 0,WHITE);
 
         rlImGuiBegin();	
+            Utils::drawUISimple();
             drawUI();
         rlImGuiEnd();
         DrawFPS(10, 10);
@@ -290,8 +291,7 @@ void GatherBasedDoF::drawUI(){
         blend = 4.0f * dofStrength;
     }
 
-    ImGui::Begin("DoF settings");
-    ImGui::SliderInt("Technique",&Utils::sTechnique, 0,3);
+    ImGui::Begin("Gather based settings");
     ImGui::SliderFloat("Strength",&dofStrength, 0,3);
     // ImGui::SliderFloat("kernel scale",&kernelScale, .1,2);
     // ImGui::SliderFloat("Blend",&blend, .1,3);

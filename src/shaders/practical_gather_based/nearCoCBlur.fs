@@ -13,12 +13,12 @@ void main() {
     vec2 pixelSize = 1.0 / textureSize(coc_texture_max, 0);
     
     float color = texture(coc_texture_max,fragTexCoord).r;
-    float weight = 1.0;
+    float weight = 0.0;
 
 	int radius = 6;
     vec2 offset;
 
-	for(int i = 1; i <= radius; i++){
+	for(int i = -radius; i <= radius; i++){
         
         if(horizontal_pass){
 
@@ -26,7 +26,6 @@ void main() {
 
             //Horizontal pass
             color += texture(coc_texture_max, clamp(fragTexCoord + offset, vec2(0,0), vec2(1,1))).r;
-            color += texture(coc_texture_max, clamp(fragTexCoord - offset, vec2(0,0), vec2(1,1))).r;
         }
         else{
             
@@ -34,9 +33,8 @@ void main() {
             
             //Vertical pass
             color += texture(coc_texture_max, clamp(fragTexCoord + offset, vec2(0,0), vec2(1,1))).r;
-            color += texture(coc_texture_max, clamp(fragTexCoord - offset, vec2(0,0), vec2(1,1))).r;
         }
-        weight+=2.0;
+        weight+=1.0;
 	}
 
 

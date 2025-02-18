@@ -35,6 +35,9 @@ class Utils{
         static int sScreen_width;
         static int sScreen_height;
         static int sTechnique;
+        static bool sAnimation;
+        static float sAnimationSpeed;
+
         static RenderTexture2D sScreen_tex;
         static RenderTexture2D sCoC_tex;
         static Camera camera;
@@ -58,5 +61,6 @@ class Utils{
         static void unloadScreenAndDepthTex();
         static void unloadTextures();
         static void drawUI();
+        static void drawUISimple();
 };
 #endif

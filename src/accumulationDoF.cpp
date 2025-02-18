@@ -29,16 +29,23 @@ void AccumulationDoF::generateSamples(){
 
 void AccumulationDoF::render(Lights* lights){
 
-    Vector3 cameraPos = Utils::camera.position;
+    if(Utils::sAnimation){
+        focusTarget.z= -14.6 * (sin(GetTime())+ 1.0) /2  * Utils::sAnimationSpeed;
+    }
 
+    Vector3 cameraPos = Utils::camera.position;
+    Utils::camera.target = {0,0,0};
+    
     Vector3 cameraForward = Vector3Normalize(Utils::camera.target - Utils::camera.position);
     Vector3 cameraRight = Vector3CrossProduct(Utils::camera.up, cameraForward);
+    
+    Utils::camera.target = Vector3Add(Utils::camera.target, cameraForward * focusTarget.z);
 
     lights->updateShaderValues(false);
     BeginTextureMode(Utils::sCoC_tex);
     ClearBackground(BLANK);
     EndTextureMode();
-
+    
     for (int i = 0; i < sampleCount; i++)
     {
 
@@ -56,15 +63,16 @@ void AccumulationDoF::render(Lights* lights){
 
         Vector3 offset = Vector3Add(cameraRight * jitterX, Utils::camera.up * jitterY);
         Utils::camera.position= Vector3Add(cameraPos, offset);
-        Utils::camera.target = {0,0,0};
 
         UpdateCamera(&Utils::camera, CAMERA_PERSPECTIVE);
 
         BeginTextureMode(Utils::sScreen_tex);
             ClearBackground(Utils::sClearColor);
-            rlDisableColorBlend();
+            BeginBlendMode(BLEND_ALPHA);
+            // rlDisableColorBlend();
             Utils::draw_scene();
-            rlEnableColorBlend();
+            EndBlendMode();
+            // rlEnableColorBlend();
         EndTextureMode();
 
         BeginTextureMode(Utils::sCoC_tex);
@@ -92,7 +100,7 @@ void AccumulationDoF::render(Lights* lights){
         EndShaderMode();
 
         rlImGuiBegin();
-            Utils::drawUI();
+            Utils::drawUISimple();
             drawUI(&lights->sunlightPos);
         rlImGuiEnd();
         DrawFPS(10, 10);
@@ -108,5 +116,6 @@ void AccumulationDoF::drawUI(Vector3* sunlightPos){
     };
     ImGui::SliderFloat("Offset factor",&offsetFactor, 0.1f,3.0f);
     ImGui::SliderFloat3("Sunlight Position",&sunlightPos->x, 0.5f,15.0f);
+    ImGui::SliderFloat3("Focus target",&focusTarget.x, -20.0f,20.0f);
     ImGui::End();
 }

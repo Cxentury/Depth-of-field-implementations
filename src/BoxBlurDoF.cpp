@@ -5,22 +5,54 @@ BoxBlurDof::BoxBlurDof(){
     shaders[SHADER_BLUR] = LoadShader(0, TextFormat("./src/shaders/boxblur/box_blur.fs", GLSL_VERSION));
     shaders[SHADER_DILATION] = LoadShader(0, TextFormat("./src/shaders/boxblur/dilation.fs", GLSL_VERSION));
     shaders[SHADER_DOF] = LoadShader(0, TextFormat("./src/shaders/boxblur/coc_blur.fs", GLSL_VERSION));
-
+    
     boxBlurParamsLoc = GetShaderLocation(shaders[SHADER_BLUR], "box_blur_settings");
     boxBlurScreenTexLoc = GetShaderLocation(shaders[SHADER_BLUR], "screen_texture");
     
     dilationScreenTexLoc = GetShaderLocation(shaders[SHADER_DILATION], "screen_texture");
     dilationParamsLoc = GetShaderLocation(shaders[SHADER_DILATION], "dilation_settings");
-
+    
     blurRadLoc = GetShaderLocation(shaders[SHADER_DOF], "max_blur_radius");
     cocTexLoc = GetShaderLocation(shaders[SHADER_DOF], "screen_texture");
     blurredTexLoc = GetShaderLocation(shaders[SHADER_DOF], "blurred_texture");
-
+    
     loadTextures();
     
 }
 
 BoxBlurDof::~BoxBlurDof(){
+}
+
+void BoxBlurDof::render(Lights* lights){
+    lights->updateShaderValues(true);
+    
+    BeginTextureMode(Utils::sScreen_tex);
+        rlDisableColorBlend();
+        ClearBackground(Utils::sClearColor);
+        Utils::draw_scene();
+        rlEnableColorBlend();
+    EndTextureMode();
+
+    //Depth and screen texture
+    BeginTextureMode(Utils::sCoC_tex);
+        ClearBackground(Utils::sClearColor);
+            rlDisableColorBlend();
+            Utils::drawCoC();
+            rlEnableColorBlend();
+    EndTextureMode();
+
+    shaderBlur();
+    shaderDilation();
+    BeginDrawing();
+        ClearBackground(Utils::sClearColor);
+        shaderDoF();
+
+        rlImGuiBegin();	
+            Utils::drawUI();
+            drawUI(&lights->sunlightPos);
+        rlImGuiEnd();
+        DrawFPS(10, 10);
+    EndDrawing();
 }
 
 void BoxBlurDof::shaderScreenTex(Lights* lightShader){
@@ -37,7 +69,7 @@ void BoxBlurDof::shaderBlur(){
         ClearBackground(RAYWHITE);
         BeginShaderMode(shaders[SHADER_BLUR]);
             SetShaderValue(shaders[SHADER_BLUR],boxBlurParamsLoc,&boxBlurParams.x,SHADER_UNIFORM_VEC2);
-            SetShaderValueTexture(shaders[SHADER_BLUR],boxBlurScreenTexLoc,Utils::sScreen_tex.texture);
+            SetShaderValueTexture(shaders[SHADER_BLUR],boxBlurScreenTexLoc,Utils::sCoC_tex.texture);
             //Does not work when I just draw a rect, even If I don't need the texture
             DrawTextureRec(Utils::sCoC_tex.texture, (Rectangle){ 0, 0, (float)Utils::sCoC_tex.texture.width, (float)-Utils::sCoC_tex.texture.height }, (Vector2){ 0, 0 }, WHITE);
         EndShaderMode();
@@ -84,36 +116,4 @@ void BoxBlurDof::loadTextures(){
 void BoxBlurDof::unloadTextures(){
     UnloadRenderTexture(textures[BLUR_TEX]);
     UnloadRenderTexture(textures[DILATION_TEX]);   
-}
-
-void BoxBlurDof::render(Lights* lights){
-    lights->updateShaderValues(true);
-    
-    BeginTextureMode(Utils::sScreen_tex);
-        rlDisableColorBlend();
-        ClearBackground(Utils::sClearColor);
-        Utils::draw_scene();
-        rlEnableColorBlend();
-    EndTextureMode();
-
-    //Depth and screen texture
-    BeginTextureMode(Utils::sCoC_tex);
-        ClearBackground(Utils::sClearColor);
-            rlDisableColorBlend();
-            Utils::drawCoC();
-            rlEnableColorBlend();
-    EndTextureMode();
-
-    shaderBlur();
-    shaderDilation();
-    BeginDrawing();
-        ClearBackground(Utils::sClearColor);
-        shaderDoF();
-
-        rlImGuiBegin();	
-            Utils::drawUI();
-            drawUI(&lights->sunlightPos);
-        rlImGuiEnd();
-        DrawFPS(10, 10);
-    EndDrawing();
 }

@@ -38,7 +38,7 @@ vec3 depthOfField(vec2 texCoord, float focusPoint, float focusScale)
 	{
 		vec2 offset = texCoord + vec2(cos(ang), sin(ang)) * tex_offset * radius;
 		vec3 sampleColor = texture(screen_texture, offset).rgb;
-		float sampleDepth = texture(screen_texture, offset).a * far_plane;
+		float sampleDepth = texture(screen_texture, offset).a;
 		float sampleSize = getBlurSize(sampleDepth, focusPoint, focusScale);
 
 		if (sampleDepth > centerDepth)

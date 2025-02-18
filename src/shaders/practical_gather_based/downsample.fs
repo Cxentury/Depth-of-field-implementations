@@ -9,7 +9,6 @@ in vec2 fragTexCoord;
 uniform sampler2D screen_texture;
 uniform sampler2D coc_texture;
 
-//I thought _ was more readable than Caps, but I regret now
 void main()
 {
     vec2 pixelSize = 1.0 / textureSize(screen_texture, 0);
@@ -50,6 +49,4 @@ void main()
     downsampled_color = color;
     downsampled_coc = coc;
     downsampled_coc_mul_far = weightedColor;
-
-
 }

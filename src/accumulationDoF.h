@@ -13,6 +13,7 @@ public:
     int sampleCount = 250;
     float offsetFactor = 0.257f;
     int randomSampling = 0;
+    Vector3 focusTarget = {0};
 
     Shader accumulationShader = LoadShader(0,"./src/shaders/accumulation/accumulation.fs");
     Shader passThroughShader = LoadShader(0,"./src/shaders/accumulation/pass_through.fs");
