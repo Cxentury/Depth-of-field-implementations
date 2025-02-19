@@ -10,7 +10,7 @@ private:
     /* data */
 public:
 
-    int sampleCount = 100;
+    int sampleCount = 20;
     float offsetFactor = 0.257f;
     int randomSampling = 0;
     Vector3 focusTarget = {0};

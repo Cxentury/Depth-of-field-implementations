@@ -8,12 +8,14 @@ in vec4 fragColor;
 uniform sampler2D screen_texture; 
 // uniform float far_plane; // Far plane  
 uniform vec2 lens_settings;
-
+uniform vec2 blur_settings;
 out vec4 finalColor;
 
 const float GOLDEN_ANGLE = 2.39996323; 
-const float MAX_BLUR_SIZE = 20.0; 
-const float RAD_SCALE = 0.5;
+// const float MAX_BLUR_SIZE = 20.0; 
+// const float RAD_SCALE = 0.5;
+float MAX_BLUR_SIZE = blur_settings.x; 
+float RAD_SCALE = blur_settings.y; 
 
 float getBlurSize(float depth, float focusPoint, float focusScale)
 {

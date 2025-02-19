@@ -14,6 +14,8 @@ class SinglePassDoF
         int screenTexLoc;
         int farPlaneLoc;
         int lensSettingsLoc;
+        int blurSettingsLoc;
+        Vector2 blurSettings = {20.0f, .5f};
 
     public:
         SinglePassDoF(/* args */);
