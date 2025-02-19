@@ -1,4 +1,4 @@
-# Blender 4.1.1 MTL File: 'scene1.blend'
+# Blender 4.1.1 MTL File: 'scene.blend'
 # www.blender.org
 
 newmtl Material
@@ -159,7 +159,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd C:/Users/Asriel/Desktop/Bureau/Dossier/Blender/Textures/Wood/bark_brown_01_4k.blend/textures/bark_brown_01_diff_4k.jpg
+map_Kd bark_brown_01_diff_4k.jpg
 
 newmtl knw
 Ns 250.000000
@@ -169,4 +169,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd C:/Users/Asriel/Desktop/Bureau/Dossier/Blender/Textures/Misc/kiminonawa023_funtokyobanner_upscayl_3x_realesrgan-x4plus.png
+map_Kd kiminonawa023_funtokyobanner_upscayl_3x_realesrgan-x4plus.png

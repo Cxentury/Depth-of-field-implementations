@@ -1,4 +1,4 @@
-# Blender 4.1.1 MTL File: 'scene1.blend'
+# Blender 4.1.1 MTL File: 'scene.blend'
 # www.blender.org
 
 newmtl Material
@@ -131,20 +131,20 @@ Ni 1.500000
 d 1.000000
 illum 2
 
-newmtl Material.015
-Ns 34.731403
-Ka 0.795455 0.795455 0.795455
-Kd 0.644476 0.545725 0.423268
+newmtl Material.014
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.930105 0.938687 0.947307
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
-illum 3
+illum 2
 
 newmtl Material.016
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
-Kd 0.804855 0.058998 0.781095
+Kd 0.811395 0.237150 0.121842
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
@@ -152,11 +152,21 @@ d 1.000000
 illum 2
 
 newmtl Trunk
+Ns 250.000000
 Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Ns C:/Users/Asriel/Desktop/Bureau/Dossier/Blender/Textures/Wood/bark_brown_01_4k.blend/textures/bark_brown_01_rough_4k.jpg
+map_Kd ../../../Desktop/Bureau/Dossier/Blender/Textures/Wood/bark_brown_01_4k.blend/textures/bark_brown_01_diff_4k.jpg
+
+newmtl knw
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd ../../../Desktop/Bureau/Dossier/Blender/Textures/Misc/kiminonawa023_funtokyobanner_upscayl_3x_realesrgan-x4plus.png
