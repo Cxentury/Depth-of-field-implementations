@@ -32,6 +32,9 @@ void AccumulationDoF::render(Lights* lights){
     if(Utils::sAnimation){
         focusTarget.z= -14.6 * (sin(GetTime())+ 1.0) /2  * Utils::sAnimationSpeed;
     }
+    if(Utils::depthDiscontinuity){
+        focusTarget.z= 20;
+    }
 
     Vector3 cameraPos = Utils::camera.position;
     Utils::camera.target = {0,0,0};
@@ -118,6 +121,6 @@ void AccumulationDoF::drawUI(Vector3* sunlightPos){
     };
     ImGui::SliderFloat("Offset factor",&offsetFactor, 0.1f,3.0f);
     ImGui::SliderFloat3("Sunlight Position",&sunlightPos->x, 0.5f,15.0f);
-    ImGui::SliderFloat3("Focus target",&focusTarget.x, -20.0f,20.0f);
+    ImGui::SliderFloat3("Focus target",&focusTarget.x, -20.0f,60.0f);
     ImGui::End();
 }

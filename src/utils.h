@@ -55,6 +55,13 @@ class Utils{
         static Vector2 lensParams;
         
         static Vector3 spherePos;
+        static Vector3 cameraMov;
+        static Vector3 cameraOriginalPos;
+
+        static bool partialOcclusion;
+        static bool depthDiscontinuity;
+        static bool pixelBleeding;
+        static bool splittingLayers;
 
         static void init();
         static void drawDepth();
@@ -66,5 +73,6 @@ class Utils{
         static void unloadTextures();
         static void drawUI();
         static void drawUISimple();
+        static void drawUIShowcase();
 };
 #endif

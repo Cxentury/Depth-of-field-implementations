@@ -290,12 +290,14 @@ void GatherBasedDoF::drawUI(){
         kernelScale = .25f;
         blend = 4.0f * dofStrength;
     }
-
+    if(Utils::splittingLayers){
+        
+    }
     ImGui::Begin("Gather based settings");
     ImGui::SliderFloat("Strength",&dofStrength, 0,3);
     ImGui::SliderFloat("kernel scale",&kernelScale, .1,2);
     // ImGui::SliderFloat("Blend",&blend, .1,3);
-    ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,30.0f);
+    ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,50.0f);
     ImGui::End();
 }
 

@@ -16,6 +16,8 @@ Texture2D Utils::background = {0};
 
 Vector2 Utils::lensParams = (Vector2) {23.2, 9};
 Vector3 Utils::spherePos = (Vector3) {1.154, 1.6, 0};
+Vector3 Utils::cameraMov = (Vector3) {0, 0, 0};
+Vector3 Utils::cameraOriginalPos = Utils::camera.position;
 
 int Utils::lensSettingsLoc = 0;
 int Utils::screenTexLoc = 0;
@@ -23,6 +25,10 @@ int Utils::sTechnique = DOF_BOXBLUR;
 bool Utils::sAnimation = false;
 bool Utils::sSphereMov = false;
 float Utils::sAnimationSpeed = 1.0;
+bool Utils::partialOcclusion = false;
+bool Utils::depthDiscontinuity = false;
+bool Utils::pixelBleeding = false;
+bool Utils::splittingLayers = false;
 
 Model Utils::scene = {0};
 Model Utils::sphere = {0};
@@ -172,7 +178,8 @@ void Utils::drawUI(){
     ImGui::Checkbox("Animation",&Utils::sAnimation);
     ImGui::Checkbox("Sphere move",&Utils::sSphereMov);
     ImGui::SliderFloat("Animation speed", &Utils::sAnimationSpeed, .1,2);
-    ImGui::End();       
+    ImGui::End();
+    drawUIShowcase();       
 }
 
 void Utils::drawUISimple(){
@@ -186,5 +193,42 @@ void Utils::drawUISimple(){
     ImGui::Checkbox("Animation",&Utils::sAnimation);
     ImGui::Checkbox("Sphere move",&Utils::sSphereMov);
     ImGui::SliderFloat("Animation speed", &Utils::sAnimationSpeed, .1,2);
+    ImGui::End();
+    drawUIShowcase(); 
+}
+
+void Utils::drawUIShowcase(){
+    
+    if(pixelBleeding){
+        spherePos.z = 15.283;
+        // cameraMov = {0,0,0};   
+        camera.position = cameraOriginalPos;     
+    }
+    if(depthDiscontinuity){
+        camera.position = {11.9572,0.506404,10.5561};
+        lensParams.x = 31.012;
+        spherePos.z = -23;
+    }
+    if(splittingLayers){
+        lensParams = {56.872,7.6};
+        camera.position = cameraOriginalPos;
+    }
+    if(partialOcclusion){
+        camera.position = {5.63692, -0.346816, 16.4025};
+        lensParams = {15.7, 8.970};
+        spherePos.z = -15.6;
+    }
+
+    // Vector3 cameraForward = Vector3Normalize(camera.target - camera.position);
+    // Vector3 cameraRight = Vector3CrossProduct(camera.up, cameraForward);
+    // Vector3 offset = cameraRight * cameraMov.x + camera.up * cameraMov.y + cameraForward * cameraMov.z;
+    // camera.position = Vector3Add(cameraOriginalPos, offset);
+    
+    ImGui::Begin("DoF settings");
+    ImGui::Checkbox("Partial occlusion",&Utils::partialOcclusion);
+    ImGui::Checkbox("Depth discontinuity",&Utils::depthDiscontinuity);
+    ImGui::Checkbox("Pixel bleeding",&Utils::pixelBleeding);
+    ImGui::Checkbox("Splitting layers",&Utils::splittingLayers);
+    // ImGui::SliderFloat3("CameraMov",&Utils::cameraMov.x,-10,10);
     ImGui::End();       
 }

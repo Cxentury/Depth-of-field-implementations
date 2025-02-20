@@ -25,6 +25,7 @@ int main()
 
     Utils::init();
     Utils::camera.position = (Vector3){ 1.45334f, 0.723842f, 25.61f};
+    Utils::cameraOriginalPos = Utils::camera.position;
     Utils::camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
     Utils::camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
     Utils::camera.fovy = 27.0f;
@@ -45,7 +46,6 @@ int main()
     SetTargetFPS(60);
     rlImGuiSetup(true);
     //--------------------------------------------------------------------------------------
-    DisableCursor();    
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
