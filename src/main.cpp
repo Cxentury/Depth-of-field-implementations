@@ -30,10 +30,16 @@ int main()
     Utils::camera.fovy = 27.0f;
     Utils::camera.projection = CAMERA_PERSPECTIVE;
     
-    for(int i = 0; i < Utils::scene.materialCount; i++){
+    Utils::sphere.materials[0].shader = lights.lightShader;
+
+    for(int i = 0; i < Utils::scene.materialCount - 6 ; i++){
         Utils::scene.materials[i].shader = lights.lightShader;
     }
-    
+
+    // Last 6 are lights
+    for(int i = Utils::scene.materialCount - 6; i < Utils::scene.materialCount ; i++){
+        Utils::scene.materials[i].shader = lights.bypassLightShader;
+    }
     //--------------------------------------------------------------------------------------
 
     SetTargetFPS(60);

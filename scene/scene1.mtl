@@ -159,7 +159,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd bark_brown_01_diff_4k.jpg
+map_Kd ../../../Desktop/Bureau/Dossier/Blender/Textures/Wood/bark_brown_01_4k.blend/textures/bark_brown_01_diff_4k.jpg
 
 newmtl knw
 Ns 250.000000
@@ -169,4 +169,64 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.500000
 d 1.000000
 illum 2
-map_Kd kiminonawa023_funtokyobanner_upscayl_3x_realesrgan-x4plus.png
+map_Kd ../../../Desktop/Bureau/Dossier/Blender/Textures/Misc/kiminonawa023_funtokyobanner_upscayl_3x_realesrgan-x4plus.png
+
+newmtl lightblue
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.051511 0.219958 0.802025
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl lightgreen
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.139325 0.800212 0.059719
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl lightorange2
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.811395 0.237150 0.121842
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl lightpink
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.802098 0.163509 0.297100
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl lightpurple
+Ns 757.036987
+Ka 1.000000 1.000000 1.000000
+Kd 0.557956 0.054230 0.800599
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl lightskyblue
+Ns 677.056763
+Ka 1.000000 1.000000 1.000000
+Kd 0.080113 0.456644 0.801554
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2

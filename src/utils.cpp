@@ -15,13 +15,18 @@ Shader Utils::cocShader = {0};
 Texture2D Utils::background = {0};
 
 Vector2 Utils::lensParams = (Vector2) {23.2, 9};
+Vector3 Utils::spherePos = (Vector3) {1.154, 1.6, 0};
+
 int Utils::lensSettingsLoc = 0;
 int Utils::screenTexLoc = 0;
 int Utils::sTechnique = DOF_BOXBLUR;
 bool Utils::sAnimation = false;
+bool Utils::sSphereMov = false;
 float Utils::sAnimationSpeed = 1.0;
 
 Model Utils::scene = {0};
+Model Utils::sphere = {0};
+
 std::array<Vector3,4> Utils::positions = {(Vector3){0} ,(Vector3) { 1.0f, 4.0f, -3.0f},(Vector3){3.0f, 2.0f, -6.0f},(Vector3){-4.0f, 6.0f, -12.0f}};
 
 void Utils::init(){
@@ -29,6 +34,7 @@ void Utils::init(){
     Utils::background = LoadTexture("./images/Medieval city by A.Rocha.png");
     // Utils::scene = LoadModel("./scene/scene1.obj");
     Utils::scene = LoadModel("./scene/scene1.obj");
+    Utils::sphere = LoadModel("./scene/sphere.obj");
     Utils::cocShader = LoadShader(0,"./src/shaders/coc.fs");
     Utils::lensSettingsLoc = GetShaderLocation(cocShader, "lens_settings");
     Utils::screenTexLoc = GetShaderLocation(cocShader, "scren_texture");
@@ -129,6 +135,8 @@ void Utils::unloadTextures(){
 
 void Utils::draw_scene(){
     BeginMode3D(Utils::camera);
+        DrawModel(Utils::sphere, spherePos,1,WHITE);
+        // DrawSphereEx(spherePos, 0.2f, 8, 8, RED);
         DrawModel(Utils::scene, {0,0,0}, 1.2, WHITE);
     EndMode3D();
 }
@@ -151,21 +159,32 @@ void Utils::onResize(){
 }
 
 void Utils::drawUI(){
-    if(sAnimation){
+    if(sAnimation)
         lensParams.x=8.5 * sin(GetTime() * sAnimationSpeed) + 18.5;
+    if(sSphereMov){
+        spherePos.z= 19.6 * (sin(GetTime())+ 1.0) /2  * Utils::sAnimationSpeed;
     }
+
     ImGui::Begin("DoF settings");
+    ImGui::SliderFloat3("Sphere Pos", &Utils::spherePos.x, -30,30);
     ImGui::SliderInt("Technique",&Utils::sTechnique, 0,3);
     ImGui::SliderFloat2("Focus distance ; Focus range",&Utils::lensParams.x, 0.0f,120.0f);
     ImGui::Checkbox("Animation",&Utils::sAnimation);
+    ImGui::Checkbox("Sphere move",&Utils::sSphereMov);
     ImGui::SliderFloat("Animation speed", &Utils::sAnimationSpeed, .1,2);
     ImGui::End();       
 }
 
 void Utils::drawUISimple(){
+    if(sAnimation)
+        lensParams.x=8.5 * sin(GetTime() * sAnimationSpeed) + 18.5;
+    if(sSphereMov){
+        spherePos.z= 19.6 * (sin(GetTime())+ 1.0) /2  * Utils::sAnimationSpeed;
+    }
     ImGui::Begin("DoF settings");
     ImGui::SliderInt("Technique",&Utils::sTechnique, 0,3);
     ImGui::Checkbox("Animation",&Utils::sAnimation);
+    ImGui::Checkbox("Sphere move",&Utils::sSphereMov);
     ImGui::SliderFloat("Animation speed", &Utils::sAnimationSpeed, .1,2);
     ImGui::End();       
 }

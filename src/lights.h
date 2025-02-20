@@ -17,11 +17,13 @@ class Lights{
         
         Light lights[MAX_LIGHTS];
         Shader lightShader;
+        Shader bypassLightShader;
         Vector3 sunlightPos;
         
         int lensSettingsLoc;
         int setDepth;
         int setDepthLoc;
+        int setDepthLightsLoc;
         
 
         Lights(/* args */);

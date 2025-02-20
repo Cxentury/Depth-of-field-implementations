@@ -68,10 +68,12 @@ void AccumulationDoF::render(Lights* lights){
 
         BeginTextureMode(Utils::sScreen_tex);
             ClearBackground(Utils::sClearColor);
-            BeginBlendMode(BLEND_ALPHA);
-            // rlDisableColorBlend();
-            Utils::draw_scene();
+            BeginBlendMode(RL_BLEND_ALPHA);
+                // BeginBlendMode(BLEND_ALPHA);
+                // rlDisableColorBlend();
+                Utils::draw_scene();
             EndBlendMode();
+            // EndBlendMode();
             // rlEnableColorBlend();
         EndTextureMode();
 
@@ -80,10 +82,10 @@ void AccumulationDoF::render(Lights* lights){
             // rlEnableColorBlend();
             BeginBlendMode(RL_BLEND_ADDITIVE);
             // glBlendColor(0,0,0,1.0/sampleCount);
-            BeginShaderMode(passThroughShader);
-                SetShaderValueTexture(passThroughShader,accumulatedTexLoc,Utils::sScreen_tex.texture);
-                DrawTextureRec(Utils::sScreen_tex.texture, (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height, }, (Vector2){ 0, 0 },WHITE);
-            EndShaderMode();
+                BeginShaderMode(passThroughShader);
+                    SetShaderValueTexture(passThroughShader,accumulatedTexLoc,Utils::sScreen_tex.texture);
+                    DrawTextureRec(Utils::sScreen_tex.texture, (Rectangle){ 0, 0, (float)Utils::sScreen_tex.texture.width, (float)-Utils::sScreen_tex.texture.height, }, (Vector2){ 0, 0 },WHITE);
+                EndShaderMode();
 
             EndBlendMode();
         EndTextureMode();
